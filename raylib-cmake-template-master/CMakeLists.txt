@@ -24,7 +24,7 @@ set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLU
 
 # Declaring our executable
 add_executable(${PROJECT_NAME})
-target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} "sources/GameObject/GameObject.cpp" "sources/ComponentPool/ComponentPool.h"  "sources/GameObject/GameObject.h" "sources/ComponentPool/Component.cpp" "sources/ComponentPool/ComponentPoolType.h" "sources/ComponentPool/ComponentPoolType.cpp" )
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} "sources/Components/CollisionColorChanger.cpp" "sources/Components/CollisionColorChanger.h" "sources/Components/Base/BaseComponent.cpp" "sources/Components/Base/BaseComponent.h" "sources/Components/NewTransform.cpp" "sources/Components/NewTransform.h" "sources/Components/PlayerController.cpp" "sources/Components/PlayerController.h" "sources/Components/RectangleCollider.cpp" "sources/Components/RectangleCollider.h" "sources/Components/RectangleRenderer.cpp" "sources/ComponentPool.h"  "sources/GameObject.cpp"  "sources/GameObject.h" "sources/WorldManager.cpp" "sources/WorldManager.h" "sources/StackAllocator.cpp")
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
