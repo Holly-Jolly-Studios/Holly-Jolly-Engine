@@ -8,6 +8,15 @@
 
 #include <vector>
 
+enum ComponentTypes
+{
+	collisionColorChangerComponent,
+	transformComponent,
+	playerControllerComponent,
+	rectangleColliderComponent,
+	rectangleRendererComponent
+};
+
 class GameObject
 {
 public:
@@ -22,12 +31,23 @@ public:
 	int GetObjectID();
 	void SetObjectID(int NewObjectID);
 
-	void SetRenderer(RectangleRenderer* NewRenderer);
-	void SetCollider(RectangleCollider* NewCollider);
-	void SetPlayerController(PlayerController* NewController);
-	void SetColorChanger(CollisionColorChanger* NewColor);
+	// Add components
 	void SetTransform(NewTransform* NewTransform);
+	void SetPlayerController(PlayerController* NewController);
+	void SetCollider(RectangleCollider* NewCollider);
+	void SetRenderer(RectangleRenderer* NewRenderer);
+	void SetColorChanger(CollisionColorChanger* NewColor);
 
+	// Remove Components
+	void RemoveFromComponentList(ComponentTypes type);
+	void RemoveTransform();
+	void RemovePlayerController();
+	void RemoveCollider();
+	void RemoveRenderer();
+	void RemoveColorChanger();
+	void RemoveAllComponents();
+
+	// Getters
 	NewTransform* GetTransform();
 	PlayerController* GetPlayerController();
 	RectangleRenderer* GetRenderer();
@@ -37,6 +57,7 @@ public:
 protected:
 
 	int m_ObjectID;
+	std::vector<ComponentTypes> m_ComponentTypes;
 
 	NewTransform* m_GOTransform;
 	PlayerController* m_GOPlayerController;

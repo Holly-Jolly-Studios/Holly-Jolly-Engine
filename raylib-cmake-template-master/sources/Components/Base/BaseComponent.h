@@ -4,7 +4,6 @@ class BaseComponent
 {
 public:
 	int GetGameObjectID();
-
 	void SetGameObjectID(int id);
 
 protected:
