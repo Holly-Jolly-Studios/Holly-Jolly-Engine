@@ -127,9 +127,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="imgui.ini" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ComponentPool.h" />
+    <ClInclude Include="Components\Base\BaseComponent.h" />
+    <ClInclude Include="Components\CollisionColorChanger.h" />
+    <ClInclude Include="Components\NewTransform.h" />
+    <ClInclude Include="Components\PlayerController.h" />
+    <ClInclude Include="Components\RectangleCollider.h" />
+    <ClInclude Include="Components\RectangleRenderer.h" />
+    <ClInclude Include="extras\FA6FreeSolidFontData.h" />
+    <ClInclude Include="extras\IconsFontAwesome6.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_raylib.h" />
@@ -139,8 +150,17 @@
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="rlImGui.h" />
     <ClInclude Include="rlImGuiColors.h" />
+    <ClInclude Include="StackAllocator.h" />
+    <ClInclude Include="WorldManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\Base\BaseComponent.cpp" />
+    <ClCompile Include="Components\CollisionColorChanger.cpp" />
+    <ClCompile Include="Components\NewTransform.cpp" />
+    <ClCompile Include="Components\PlayerController.cpp" />
+    <ClCompile Include="Components\RectangleCollider.cpp" />
+    <ClCompile Include="Components\RectangleRenderer.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
@@ -148,6 +168,12 @@
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rlImGui.cpp" />
+    <ClCompile Include="StackAllocator.cpp" />
+    <ClCompile Include="WorldManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="extras\FontAwsome_LICENSE.txt" />
+    <Text Include="level.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

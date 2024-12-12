@@ -1,36 +1,71 @@
+//#include "raylib.h"
+//#include "imgui.h"
+//#include "rlImGui.h"
+//
+//int main()
+//{
+//	const int w = 700;
+//	const int h = 700;
+//
+//	InitWindow(w, h, "test");
+//	SetTargetFPS(60);
+//
+//	rlImGuiSetup(true);
+//
+//	while (!WindowShouldClose())
+//	{
+//		BeginDrawing();
+//		ClearBackground(RAYWHITE);
+//
+//		rlImGuiBegin();
+//		// render imgui content
+//
+//		// frame 1
+//		ImGui::Begin("Hello!", NULL);
+//		ImGui::Text("Hello World!");
+//		ImGui::End();
+//
+//		rlImGuiEnd();
+//
+//		EndDrawing();
+//	}
+//
+//	rlImGuiShutdown();
+//	CloseWindow();
+//	return 0;
+//}
+
+
+
 #include "raylib.h"
-#include "imgui.h"
-#include "rlImGui.h"
+#include "WorldManager.h"
 
-int main()
+#include <iostream>
+
+#define SCREEN_WIDTH (800)
+#define SCREEN_HEIGHT (600)
+
+const int TARGET_FPS = 60;
+
+#define WINDOW_TITLE "GPR-460 Assignment That Def Isn't Late"
+
+int main(void)
 {
-	const int w = 700;
-	const int h = 700;
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+    SetTargetFPS(TARGET_FPS);
 
-	InitWindow(w, h, "test");
-	SetTargetFPS(60);
+    WorldManager::CreateInstance();
+    WorldManager* gameManager = WorldManager::GetInstance();
 
-	rlImGuiSetup(true);
+    // Loop until game is done
+    gameManager->GameLoop();
 
-	while (!WindowShouldClose())
-	{
-		BeginDrawing();
-		ClearBackground(RAYWHITE);
-
-		rlImGuiBegin();
-		// render imgui content
-
-		// frame 1
-		ImGui::Begin("Hello!", NULL);
-		ImGui::Text("Hello World!");
-		ImGui::End();
-
-		rlImGuiEnd();
-
-		EndDrawing();
-	}
+    // Cleanup
+    gameManager->DestroyInstance();
+    gameManager = nullptr;
 
 	rlImGuiShutdown();
-	CloseWindow();
-	return 0;
+    CloseWindow();
+
+    return 0;
 }
