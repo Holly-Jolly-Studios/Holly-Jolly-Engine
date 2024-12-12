@@ -7,6 +7,7 @@
 #include "Components/RectangleRenderer.h"
 
 #include <vector>
+#include <string>
 
 enum ComponentTypes
 {
@@ -32,6 +33,7 @@ public:
 	void SetObjectID(int NewObjectID);
 
 	// Add components
+	bool ContainsComponentInList(ComponentTypes type);
 	void SetTransform(NewTransform* NewTransform);
 	void SetPlayerController(PlayerController* NewController);
 	void SetCollider(RectangleCollider* NewCollider);
@@ -54,8 +56,11 @@ public:
 	RectangleCollider* GetCollider();
 	CollisionColorChanger* GetCollisionColorChanger();
 
-protected:
+	// Name
+	void SetName(std::string name);
 
+protected:
+	std::string m_Name;
 	int m_ObjectID;
 	std::vector<ComponentTypes> m_ComponentTypes;
 
@@ -64,5 +69,4 @@ protected:
 	RectangleRenderer* m_GORenderer;
 	RectangleCollider* m_GOCollider;
 	CollisionColorChanger* m_GOColorChanger;
-
 };

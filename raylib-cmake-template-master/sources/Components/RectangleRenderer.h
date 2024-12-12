@@ -10,8 +10,6 @@ public:
 	RectangleRenderer(float width, float height, float x, float y, Color color);
 	~RectangleRenderer();
 
-	void Init();
-
 	// Helpers
 	float GetWidth();
 	float GetHeight();
@@ -24,6 +22,12 @@ public:
 	void SetTopLeftX(float newX);
 	void SetTopLeftY(float newY);
 	void SetColor(Color newColor);
+
+	// Change Color
+	void SetRValue(float value);
+	void SetGValue(float value);
+	void SetBValue(float value);
+	void SetAValue(float value);
 
 private:
 

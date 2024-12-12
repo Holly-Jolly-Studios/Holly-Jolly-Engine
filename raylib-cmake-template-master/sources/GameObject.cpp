@@ -102,46 +102,79 @@ void GameObject::SetObjectID(int NewObjectID)
 
 #pragma endregion
 
-#pragma region Helpers
+#pragma region Add Components
 
+bool GameObject::ContainsComponentInList(ComponentTypes type)
+{
+	if (std::find(m_ComponentTypes.begin(), m_ComponentTypes.end(), type) != m_ComponentTypes.end()) 
+	{
+		return true;
+	}
+	else 
+	{
+		return false;
+	}
+}
 
 void GameObject::SetTransform(NewTransform* NewTransform)
 {
 	this->m_GOTransform = NewTransform;
-	m_ComponentTypes.push_back(transformComponent);
+
+	if (!ContainsComponentInList(transformComponent))
+	{
+		m_ComponentTypes.push_back(transformComponent);
+	}
 }
 
 void GameObject::SetPlayerController(PlayerController* NewController)
 {
 	this->m_GOPlayerController = NewController;
-	m_ComponentTypes.push_back(playerControllerComponent);
+
+	if (!ContainsComponentInList(playerControllerComponent))
+	{
+		m_ComponentTypes.push_back(playerControllerComponent);
+	}
 }
 
 void GameObject::SetCollider(RectangleCollider* NewCollider)
 {
 	this->m_GOCollider = NewCollider;
-	m_ComponentTypes.push_back(rectangleColliderComponent);
+
+	if (!ContainsComponentInList(rectangleColliderComponent))
+	{
+		m_ComponentTypes.push_back(rectangleColliderComponent);
+	}
 }
 
 void GameObject::SetRenderer(RectangleRenderer* NewRenderer)
 {
 	this->m_GORenderer = NewRenderer;
-	m_ComponentTypes.push_back(rectangleRendererComponent);
+
+	if (!ContainsComponentInList(rectangleRendererComponent))
+	{
+		m_ComponentTypes.push_back(rectangleRendererComponent);
+	}
 }
 
 void GameObject::SetColorChanger(CollisionColorChanger* NewColor)
 {
 	this->m_GOColorChanger = NewColor;
-	m_ComponentTypes.push_back(collisionColorChangerComponent);
+
+	if (!ContainsComponentInList(collisionColorChangerComponent))
+	{
+		m_ComponentTypes.push_back(collisionColorChangerComponent);
+	}
 }
 
+#pragma endregion
 
 #pragma region Remove Components
 
 void GameObject::RemoveFromComponentList(ComponentTypes type)
 {
 	// may cause errors, try to loop through instead?
-	m_ComponentTypes.erase(std::remove(m_ComponentTypes.begin(), m_ComponentTypes.end(), type), m_ComponentTypes.end());
+	if (ContainsComponentInList(type))
+		m_ComponentTypes.erase(std::remove(m_ComponentTypes.begin(), m_ComponentTypes.end(), type), m_ComponentTypes.end());
 }
 
 void GameObject::RemoveTransform()
@@ -201,7 +234,7 @@ void GameObject::RemoveAllComponents()
 
 #pragma endregion
 
-
+#pragma region Getters
 
 NewTransform* GameObject::GetTransform()
 {
@@ -257,5 +290,7 @@ CollisionColorChanger* GameObject::GetCollisionColorChanger()
 
 #pragma endregion
 
-
-
+void GameObject::SetName(std::string name)
+{
+	m_Name = name;
+}

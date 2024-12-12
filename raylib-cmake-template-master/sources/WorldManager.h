@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <chrono>
+#include <fstream>
 
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
@@ -31,6 +32,21 @@ private:
 
 	static WorldManager* m_WorldManager;
 	std::unordered_map<int, GameObject*> m_World;
+
+	// Level Serialization
+	void LoadWorld();
+	int GetComponentValue(std::string stream);
+
+
+	// Game Object Components
+	GameObject* CreateEmptyGO();
+
+	void AddNewComponent(GameObject* gameobject, ComponentTypes type);
+	//void AddTransform(GameObject* gameobject);
+	//void AddPlayerController(GameObject* gameobject);
+	//void AddCollider(GameObject* gameobject);
+	//void AddRenderer(GameObject* gameobject);
+	//void AddColorChanger(GameObject* gameobject);
 
 	// Components
 	NewTransform* CreateNewTransform();

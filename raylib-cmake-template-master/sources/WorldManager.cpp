@@ -115,7 +115,7 @@ WorldManager::WorldManager()
 	background->SetRenderer(CreateNewRenderer(13000, 8000, -6000, 0, Color{ 0, 50, 25, 255 }));
 	background->GetRenderer()->SetGameObjectID(background->GetObjectID());
 
-	m_World.emplace(background->GetObjectID(), background);
+	//m_World.emplace(background->GetObjectID(), background);
 
 
 	// Player
@@ -137,7 +137,9 @@ WorldManager::WorldManager()
 	player->SetColorChanger(CreateNewColorChanger(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
 	player->GetCollisionColorChanger()->SetGameObjectID(player->GetObjectID());
 
-	m_World.emplace(player->GetObjectID(), player);
+	//m_World.emplace(player->GetObjectID(), player);
+
+	LoadWorld();
 }
 
 WorldManager::~WorldManager()
@@ -227,7 +229,7 @@ void WorldManager::RenderWorld()
 
 void WorldManager::ClearWorld()
 {
-	// do something
+	// clear
 }
 
 int WorldManager::GetNewGOObjectID()
@@ -238,7 +240,7 @@ int WorldManager::GetNewGOObjectID()
 
 void WorldManager::DebugFrames()
 {
-	if (IsKeyDown(KEY_P))
+	if (IsKeyDown(KEY_F))
 	{
 		printf("Time for frame (ms): %i \n", *m_Frames);
 	}
@@ -344,6 +346,386 @@ GameObject* WorldManager::GetClosestGO(NewTransform* transform)
 	}
 	return m_World[closest->GetGameObjectID()];
 }
+
+const std::string WORLD_FILE_NAME = "world.txt";
+const std::string WORLD_FILE_PATH = "../../../";
+const int MAX_COMMENT_LENGTH = 256;
+const char COMMENT = '#';
+
+
+void WorldManager::LoadWorld()
+{
+	std::fstream file;
+	file.open(WORLD_FILE_PATH + WORLD_FILE_NAME);
+
+	if (file.is_open() && file.good())
+	{
+		char input = ' ';
+		std::string currentInput;
+		std::string previousInput;
+
+		bool isEditingComponent = false;
+		int currentComponentIndex = 0;
+		GameObject* currentGameObject = nullptr;
+
+		while (!file.eof())
+		{
+			file >> input;
+
+			// If input is comment char then ignore whats inside
+			if (input == COMMENT)
+			{
+				file.ignore(MAX_COMMENT_LENGTH, COMMENT);
+			}
+
+			// If component exists and your stream isn't empty and if end of value (indicated with ;)
+			else if (isEditingComponent && currentInput.size() >= 2 && input == ';')
+			{
+				switch (currentComponentIndex)
+				{
+				// Transform
+				case 0:
+					if (currentInput[0] == 'x')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetTransform()->SetX(value);
+						printf("%i Setting x in transform to: ", value);
+					}
+					else if (currentInput[0] == 'y')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetTransform()->SetY(value);
+						printf("%i Setting y in transform to: ", value);
+					}
+					else
+					{
+						int value = GetComponentValue(currentInput);
+						printf("%i Invalid entry: ", value);
+					}
+					
+					break;
+
+				// Player controller
+				case 1:
+					// Do nothing, no values needed
+					break;
+
+				// Renderer
+				case 2: 
+					if (currentGameObject->GetRenderer() == nullptr)
+					{
+						break;
+					}
+
+					// Based on value change either width, height, r, g, b, or a
+					if (currentInput[0] == 'w')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetWidth(value);
+						printf("%i Setting width in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'h')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetHeight(value);
+						printf("%i Setting height in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'x')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetTopLeftX(value);
+						printf("%i Setting x in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'y')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetTopLeftY(value);
+						printf("%i Setting y in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'r')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetRValue(value);
+						printf("%i Setting r in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'g')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetGValue(value);
+						printf("%i Setting g in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'b')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetBValue(value);
+						printf("%i Setting b in renderer to: ", value);
+					}
+					else if (currentInput[0] == 'a')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetRenderer()->SetAValue(value);
+						printf("%i Setting a in renderer to: ", value);
+					}
+					else
+					{
+						int value = GetComponentValue(currentInput);
+						printf("%i Invalid entry: ", value);
+					}
+					
+					break;
+			
+				// Collision
+				case 3:
+					// do nothing, no values needed
+					break;
+
+				// Color Changer
+				case 4: 
+					// If no renderer or color changer then break
+					if (currentGameObject->GetRenderer() == nullptr || currentGameObject->GetCollisionColorChanger() == nullptr)
+					{
+						break;
+					}
+
+					if (currentInput[0] == 'r')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetCollisionColorChanger()->SetRValue(value);
+						printf(" %i Setting r in color changer to: ", value);
+					}
+					else if (currentInput[0] == 'g')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetCollisionColorChanger()->SetGValue(value);
+						printf(" %i Setting g in color changer to: ", value);
+					}
+					else if (currentInput[0] == 'b')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetCollisionColorChanger()->SetBValue(value);
+						printf(" %i Setting b in color changer to: ", value);
+					}
+					else if (currentInput[0] == 'a')
+					{
+						int value = GetComponentValue(currentInput);
+						currentGameObject->GetCollisionColorChanger()->SetAValue(value);
+						printf(" %i Setting a in color changer to: ", value);
+					}
+					else
+					{
+						int value = GetComponentValue(currentInput);
+						printf(" %i  Invalid entry: ", value);
+					}
+					break;
+				}
+
+				currentInput = "";
+				continue;
+			}
+			else
+			{
+				if (input == '(' || input == ')' || input == '{' || input == '}')
+				{
+					if (input == '}')
+					{
+						isEditingComponent = false;
+					}
+
+					if (currentInput == "gameobject" && !isEditingComponent)
+					{
+						//currentLayer = 1;
+						printf("\nCreating new GameObject\n");
+						currentGameObject = CreateEmptyGO();
+						previousInput = currentInput;
+
+					}
+					else if (currentInput == "component" && !isEditingComponent)
+					{
+						//currentLayer = 2;
+						printf("\nCreating new component\n");
+
+						previousInput = currentInput;
+					}
+					else
+					{
+						if (previousInput == "name")
+						{
+							// TODO: give this guy a name
+							std::string NAME = "";
+							currentGameObject->SetName(NAME);
+						}
+						if (previousInput == "component")
+						{
+							int componentID = std::atoi(currentInput.c_str());
+
+							currentComponentIndex = componentID;
+
+							// Only do if go exists
+							if (currentGameObject != nullptr)
+							{
+								/*
+								0 - transform
+								1 - player
+								2 - rect rend
+								3 - rect col
+								4 - color col
+								*/
+								switch (componentID)
+								{
+								case 0: 
+									printf("\nCreating transform component on the given gameobject\n");
+									AddNewComponent(currentGameObject, transformComponent);
+
+									break;
+
+								case 1: 
+									printf("\nCreating player controller component on the given gameobject\n");
+									AddNewComponent(currentGameObject, playerControllerComponent);
+									break;
+									
+
+								case 2:
+									printf("\nCreating rectangle render component on the given gameobject\n");
+									AddNewComponent(currentGameObject, rectangleRendererComponent);
+
+									break;
+									
+
+								case 3:
+									printf("\nCreating rectangle collider component on the given gameobject\n");
+									AddNewComponent(currentGameObject, rectangleColliderComponent);
+									break;
+
+								case 4: 
+									printf("\nCreating color changer component on the given gameobject\n");
+									AddNewComponent(currentGameObject, collisionColorChangerComponent);
+
+									break;
+
+								default:
+									printf("\nNo component found :( \n");
+									break;
+								}
+							}
+
+							isEditingComponent = true;
+						}
+						else
+						{
+							// do nothing otherwise
+						}
+
+						previousInput = currentInput;
+					}
+
+					currentInput = "";
+					continue;
+				}
+
+				currentInput.push_back(input);
+
+				printf(" %i Input: ", input);
+			}
+		}
+	}
+
+	file.close();
+}
+
+
+int WorldManager::GetComponentValue(std::string stream)
+{
+	// Gets rid of first value, which isn't our value, and returns a int converted from our "string"
+	stream.erase(0, 1);
+	return std::atoi(stream.c_str());
+}
+
+
+#pragma region Game Object Components
+
+GameObject* WorldManager::CreateEmptyGO()
+{
+	// Create object, give it an ID, put in world, return object
+	GameObject* gameobject = new GameObject();
+	gameobject->SetObjectID(GetNewGOObjectID());
+	m_World.emplace(gameobject->GetObjectID(), gameobject);
+	return gameobject;
+}
+
+void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
+{
+	switch (type)
+	{
+	case collisionColorChangerComponent:
+		gameobject->SetColorChanger(CreateNewColorChanger());
+		gameobject->GetCollisionColorChanger()->SetGameObjectID(gameobject->GetObjectID());
+
+		if (gameobject->GetRenderer() != NULL)
+		{
+			gameobject->GetCollisionColorChanger()->SetDefaultColor(gameobject->GetRenderer()->GetColor());
+		}
+		break;
+
+	case transformComponent:
+		gameobject->SetTransform(CreateNewTransform());
+		gameobject->GetTransform()->SetGameObjectID(gameobject->GetObjectID());
+		break;
+
+	case playerControllerComponent:
+		gameobject->SetPlayerController(CreateNewController());
+		gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
+		break;
+	case rectangleColliderComponent:
+		gameobject->SetCollider(CreateNewCollider());
+		gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
+		break;
+
+	case rectangleRendererComponent:
+		gameobject->SetRenderer(CreateNewRenderer());
+		gameobject->GetRenderer()->SetGameObjectID(gameobject->GetObjectID());
+		break;
+
+	default:
+		printf("no component found you are doing to die in 5 seconds");
+		break;
+	}
+}
+//
+//void WorldManager::AddTransform(GameObject* gameobject)
+//{
+//	gameobject->SetTransform(CreateNewTransform());
+//	gameobject->GetTransform()->SetGameObjectID(gameobject->GetObjectID());
+//}
+//
+//void WorldManager::AddPlayerController(GameObject* gameobject)
+//{
+//	gameobject->SetPlayerController(CreateNewController());
+//	gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
+//}
+//
+//
+//void WorldManager::AddCollider(GameObject* gameobject)
+//{
+//	gameobject->SetCollider(CreateNewCollider());
+//	gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
+//}
+//
+//void WorldManager::AddRenderer(GameObject* gameobject)
+//{
+//	gameobject->SetRenderer(CreateNewRenderer());
+//	gameobject->GetRenderer()->SetGameObjectID(gameobject->GetObjectID());
+//}
+//void WorldManager::AddColorChanger(GameObject* gameobject)
+//{
+//	gameobject->SetColorChanger(CreateNewColorChanger());
+//	gameobject->GetCollisionColorChanger()->SetGameObjectID(gameobject->GetObjectID());
+//}
+
+#pragma endregion
+
+
+
+
 
 #pragma region Component
 

@@ -1,0 +1,30 @@
+# should ignore this #
+
+# 
+and
+this
+#
+
+
+# this should spawn in a gameobject with a transform component and a renderer and an empty color changer#
+gameobject
+{
+	name(test)
+	component(0)
+	{
+	x200;
+	y200;
+	}
+	component(2)
+	{
+	w50;
+	h50;
+	x500;
+	y500;
+	r256;
+	g256;
+	b256;
+	a256;
+	}
+	component(4)
+}

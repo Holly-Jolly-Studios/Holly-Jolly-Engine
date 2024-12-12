@@ -2,7 +2,9 @@
 
 RectangleRenderer::RectangleRenderer()
 {
-	Init();
+	m_Width = 0;
+	m_Height = 0;
+	m_Color = { 0, 0, 0, 0 };
 }
 
 RectangleRenderer::RectangleRenderer(float width, float height, float topLeftX, float topLeftY, Color color)
@@ -17,13 +19,6 @@ RectangleRenderer::RectangleRenderer(float width, float height, float topLeftX, 
 RectangleRenderer::~RectangleRenderer()
 {
 	// Do nothing
-}
-
-void RectangleRenderer::Init()
-{
-	m_Width = 0;
-	m_Height = 0;
-	m_Color = { 0, 0, 0, 0 };
 }
 
 #pragma region Helpers
@@ -79,3 +74,24 @@ void RectangleRenderer::SetTopLeftY(float newY)
 }
 
 #pragma endregion
+
+
+
+void RectangleRenderer::SetRValue(float value)
+{
+	this->m_Color.r = value;
+}
+
+void RectangleRenderer::SetGValue(float value) 
+{
+	this->m_Color.g = value;
+}
+
+void RectangleRenderer::SetBValue(float value) 
+{
+	this->m_Color.b = value;
+}
+
+void RectangleRenderer::SetAValue(float value) {
+	this->m_Color.a = value;
+}
