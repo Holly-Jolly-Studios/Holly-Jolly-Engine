@@ -1,5 +1,6 @@
 #include "WorldManager.h"
 
+// Global Instance
 WorldManager* WorldManager::gs_WorldManager = nullptr;
 
 // Instance Helpers
