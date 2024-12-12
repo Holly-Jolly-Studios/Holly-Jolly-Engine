@@ -240,9 +240,10 @@ NewTransform* GameObject::GetTransform()
 {
 	if (m_GOTransform == nullptr)
 	{
+		printf("FUCK");
 		return NULL;
 	}
-
+	printf("ok:\n");
 	return m_GOTransform;
 }
 

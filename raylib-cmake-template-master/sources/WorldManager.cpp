@@ -1,6 +1,6 @@
 #include "WorldManager.h"
 
-const int MAX_COMPONENTS = 20;
+const int MAX_COMPONENT_AMOUNT = 20;
 
 WorldManager* WorldManager::m_WorldManager = nullptr;
 
@@ -99,45 +99,43 @@ WorldManager::WorldManager()
 	m_ObjectIDIndex = 0;
 
 	// Pool setup
-	m_NewTransformPool.SetSize(MAX_COMPONENTS);
-	m_CollisionColorChangerPool.SetSize(MAX_COMPONENTS);
-	m_PlayerControllerPool.SetSize(MAX_COMPONENTS);
-	m_ColliderPool.SetSize(MAX_COMPONENTS);
-	m_RendererPool.SetSize(MAX_COMPONENTS);
+	m_NewTransformPool.SetSize(MAX_COMPONENT_AMOUNT);
+	m_CollisionColorChangerPool.SetSize(MAX_COMPONENT_AMOUNT);
+	m_PlayerControllerPool.SetSize(MAX_COMPONENT_AMOUNT);
+	m_ColliderPool.SetSize(MAX_COMPONENT_AMOUNT);
+	m_RendererPool.SetSize(MAX_COMPONENT_AMOUNT);
 
 	// BG
 	GameObject* background = new GameObject;
 	background->SetObjectID(GetNewGOObjectID());
 
-	background->SetTransform(CreateNewTransform(0, 0));
+	background->SetTransform(CreateNewTransformPool(0, 0));
 	background->GetTransform()->SetGameObjectID(background->GetObjectID());
 
-	background->SetRenderer(CreateNewRenderer(13000, 8000, -6000, 0, Color{ 0, 50, 25, 255 }));
+	background->SetRenderer(CreateNewRendererPool(13000, 8000, -6000, 0, Color{ 0, 50, 25, 255 }));
 	background->GetRenderer()->SetGameObjectID(background->GetObjectID());
-
-	//m_World.emplace(background->GetObjectID(), background);
-
 
 	// Player
 	GameObject* player = new GameObject;
 	player->SetObjectID(GetNewGOObjectID());
 
-	player->SetTransform(CreateNewTransform(500, 500));
+	player->SetTransform(CreateNewTransformPool(500, 500));
 	player->GetTransform()->SetGameObjectID(player->GetObjectID());
 
-	player->SetPlayerController(CreateNewController());
-	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());
+	/*player->SetPlayerController(CreateNewControllerPool());
+	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());*/
 
-	player->SetCollider(CreateNewCollider());
+	player->SetCollider(CreateNewColliderPool());
 	player->GetCollider()->SetGameObjectID(player->GetObjectID());
 
-	player->SetRenderer(CreateNewRenderer(40, 40, 400, 280, Color{ 0, 100, 255, 255 }));
+	player->SetRenderer(CreateNewRendererPool(40, 40, 400, 280, Color{ 0, 100, 255, 255 }));
 	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
 
-	player->SetColorChanger(CreateNewColorChanger(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
+	player->SetColorChanger(CreateNewColorChangerPool(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
 	player->GetCollisionColorChanger()->SetGameObjectID(player->GetObjectID());
 
 	//m_World.emplace(player->GetObjectID(), player);
+
 
 	LoadWorld();
 }
@@ -150,19 +148,25 @@ WorldManager::~WorldManager()
 
 void WorldManager::UpdateWorld()
 {
-	int i;
+	int i, j;
 
 	// Update player controller
 	for (i = 0; i < m_PlayerControllerList.size(); i++)
 	{
+		
 		int players = m_PlayerControllerList[i]->Update(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
+		//int players = m_PlayerControllerList.size();
 
+		// Check player count, if more than 1 delete the extra
 		if (players == 0)
 		{
 			// do nothing
 		}
 		else if (players == 1)
 		{
+			int temp1 = m_PlayerControllerList[i]->GetGameObjectID();
+			auto temp2 = m_World[temp1];
+
 			SpawnPlayerGameObject(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
 		}
 		else
@@ -172,7 +176,6 @@ void WorldManager::UpdateWorld()
 	}
 
 	//Check for collisions
-	int j;
 	for (i = 0; i < m_ColliderList.size(); i++)
 	{
 		for (j = 0; j < m_ColliderList.size(); j++)
@@ -190,9 +193,9 @@ void WorldManager::UpdateWorld()
 	//Update collision collor changer
 	for (i = 0; i < m_CollisionColorChangerList.size(); i++)
 	{
-		bool stateChanged = m_CollisionColorChangerList[i]->Update(m_World[m_CollisionColorChangerList[i]->GetGameObjectID()]->GetCollider()->GetIsColliding());
+		bool colliding = m_CollisionColorChangerList[i]->Update(m_World[m_CollisionColorChangerList[i]->GetGameObjectID()]->GetCollider()->GetIsColliding());
 
-		if (stateChanged)
+		if (colliding)
 		{
 			if (m_CollisionColorChangerList[i]->GetIsDefaultColor())
 			{
@@ -212,16 +215,16 @@ void WorldManager::RenderWorld()
 
 	for (i = 0; i < m_RendererList.size(); i++)
 	{
-		RectangleRenderer* ren = m_RendererList[i];
-		if (ren != nullptr)
+		RectangleRenderer* renderer = m_RendererList[i];
+		if (renderer != nullptr)
 		{
-			if (m_World[ren->GetGameObjectID()]->GetTransform() != NULL)
+			if (m_World[renderer->GetGameObjectID()]->GetTransform() != NULL)
 			{
-				DrawRectangle(m_World[ren->GetGameObjectID()]->GetTransform()->GetX(), m_World[ren->GetGameObjectID()]->GetTransform()->GetY(), ren->GetWidth(), ren->GetHeight(), ren->GetColor());
+				DrawRectangle(m_World[renderer->GetGameObjectID()]->GetTransform()->GetX(), m_World[renderer->GetGameObjectID()]->GetTransform()->GetY(), renderer->GetWidth(), renderer->GetHeight(), renderer->GetColor());
 			}
 			else
 			{
-				DrawRectangle(ren->GetTopLeftX(), ren->GetTopLeftY(), ren->GetWidth(), ren->GetHeight(), ren->GetColor());
+				DrawRectangle(renderer->GetTopLeftX(), renderer->GetTopLeftY(), renderer->GetWidth(), renderer->GetHeight(), renderer->GetColor());
 			}
 		}
 	}
@@ -252,19 +255,22 @@ void WorldManager::DebugFrames()
 
 void WorldManager::SpawnPlayerGameObject(NewTransform* playerTransform)
 {
-	GameObject* go = new GameObject;
-	go->SetObjectID(GetNewGOObjectID());
+	GameObject* player = new GameObject;
+	player->SetObjectID(GetNewGOObjectID());
 
-	go->SetTransform(CreateNewTransform(playerTransform->GetX() + 10, playerTransform->GetY() + 10));
-	go->GetTransform()->SetGameObjectID(go->GetObjectID());
+	player->SetTransform(CreateNewTransformPool(playerTransform->GetX() + 10, playerTransform->GetY() + 10));
+	player->GetTransform()->SetGameObjectID(player->GetObjectID());
 
-	go->SetCollider(CreateNewCollider());
-	go->GetCollider()->SetGameObjectID(go->GetObjectID());
+	player->SetPlayerController(CreateNewControllerPool());
+	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());
 
-	go->SetRenderer(CreateNewRenderer(80, 80, 800, 600, Color{ 255, 255, 0, 255 }));
-	go->GetRenderer()->SetGameObjectID(go->GetObjectID());
+	player->SetCollider(CreateNewColliderPool());
+	player->GetCollider()->SetGameObjectID(player->GetObjectID());
 
-	m_World.emplace(go->GetObjectID(), go);
+	player->SetRenderer(CreateNewRendererPool(80, 80, 800, 600, Color{ 255, 255, 0, 255 }));
+	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
+
+	m_World.emplace(player->GetObjectID(), player);
 }
 
 void WorldManager::DeleteFromWorld(GameObject* go)
@@ -347,7 +353,7 @@ GameObject* WorldManager::GetClosestGO(NewTransform* transform)
 	return m_World[closest->GetGameObjectID()];
 }
 
-const std::string WORLD_FILE_NAME = "world.txt";
+const std::string WORLD_FILE_NAME = "worldTest.txt";
 const std::string WORLD_FILE_PATH = "../../../";
 const int MAX_COMMENT_LENGTH = 256;
 const char COMMENT = '#';
@@ -548,12 +554,12 @@ void WorldManager::LoadWorld()
 					}
 					else
 					{
-						if (previousInput == "name")
-						{
-							// TODO: give this guy a name
-							std::string NAME = "";
-							currentGameObject->SetName(NAME);
-						}
+						//if (previousInput == "name")
+						//{
+						//	// TODO: give this guy a name
+						//	std::string NAME = "";
+						//	currentGameObject->SetName(NAME);
+						//}
 						if (previousInput == "component")
 						{
 							int componentID = std::atoi(currentInput.c_str());
@@ -657,7 +663,7 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 	switch (type)
 	{
 	case collisionColorChangerComponent:
-		gameobject->SetColorChanger(CreateNewColorChanger());
+		gameobject->SetColorChanger(CreateNewColorChangerPool());
 		gameobject->GetCollisionColorChanger()->SetGameObjectID(gameobject->GetObjectID());
 
 		if (gameobject->GetRenderer() != NULL)
@@ -667,21 +673,21 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 		break;
 
 	case transformComponent:
-		gameobject->SetTransform(CreateNewTransform());
+		gameobject->SetTransform(CreateNewTransformPool());
 		gameobject->GetTransform()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
 	case playerControllerComponent:
-		gameobject->SetPlayerController(CreateNewController());
+		gameobject->SetPlayerController(CreateNewControllerPool());
 		gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 	case rectangleColliderComponent:
-		gameobject->SetCollider(CreateNewCollider());
+		gameobject->SetCollider(CreateNewColliderPool());
 		gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
 	case rectangleRendererComponent:
-		gameobject->SetRenderer(CreateNewRenderer());
+		gameobject->SetRenderer(CreateNewRendererPool());
 		gameobject->GetRenderer()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
@@ -690,36 +696,6 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 		break;
 	}
 }
-//
-//void WorldManager::AddTransform(GameObject* gameobject)
-//{
-//	gameobject->SetTransform(CreateNewTransform());
-//	gameobject->GetTransform()->SetGameObjectID(gameobject->GetObjectID());
-//}
-//
-//void WorldManager::AddPlayerController(GameObject* gameobject)
-//{
-//	gameobject->SetPlayerController(CreateNewController());
-//	gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
-//}
-//
-//
-//void WorldManager::AddCollider(GameObject* gameobject)
-//{
-//	gameobject->SetCollider(CreateNewCollider());
-//	gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
-//}
-//
-//void WorldManager::AddRenderer(GameObject* gameobject)
-//{
-//	gameobject->SetRenderer(CreateNewRenderer());
-//	gameobject->GetRenderer()->SetGameObjectID(gameobject->GetObjectID());
-//}
-//void WorldManager::AddColorChanger(GameObject* gameobject)
-//{
-//	gameobject->SetColorChanger(CreateNewColorChanger());
-//	gameobject->GetCollisionColorChanger()->SetGameObjectID(gameobject->GetObjectID());
-//}
 
 #pragma endregion
 
@@ -727,63 +703,65 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 
 
 
-#pragma region Component
+#pragma region Component pools
 
-NewTransform* WorldManager::CreateNewTransform()
+NewTransform* WorldManager::CreateNewTransformPool()
 {
 	NewTransform* t = m_NewTransformPool.New();
 	m_NewTransformList.push_back(t);
 	return t;
 }
 
-NewTransform* WorldManager::CreateNewTransform(float x, float y)
+NewTransform* WorldManager::CreateNewTransformPool(float x, float y)
 {
 	NewTransform* t = m_NewTransformPool.New(x, y);
 	m_NewTransformList.push_back(t);
+	printf(" transform pool pushing back: ", t);
 	return t;
 }
 
-CollisionColorChanger* WorldManager::CreateNewColorChanger()
-{
-	CollisionColorChanger* c = m_CollisionColorChangerPool.New();
-	m_CollisionColorChangerList.push_back(c);
-	return c;
-}
-
-CollisionColorChanger* WorldManager::CreateNewColorChanger(Color changedColor, Color defaultColor)
-{
-	CollisionColorChanger* c = m_CollisionColorChangerPool.New(changedColor, defaultColor);
-	m_CollisionColorChangerList.push_back(c);
-	return c;
-}
-
-PlayerController* WorldManager::CreateNewController()
+PlayerController* WorldManager::CreateNewControllerPool()
 {
 	PlayerController* p = m_PlayerControllerPool.New();
 	m_PlayerControllerList.push_back(p);
 	return p;
 }
 
-RectangleCollider* WorldManager::CreateNewCollider()
-{
-	RectangleCollider* r = m_ColliderPool.New();
-	m_ColliderList.push_back(r);
-	return r;
-}
-
-RectangleRenderer* WorldManager::CreateNewRenderer()
+RectangleRenderer* WorldManager::CreateNewRendererPool()
 {
 	RectangleRenderer* r = m_RendererPool.New();
 	m_RendererList.push_back(r);
 	return r;
 }
 
-RectangleRenderer* WorldManager::CreateNewRenderer(float width, float height, float topLeftX, float topLeftY, Color color)
+RectangleRenderer* WorldManager::CreateNewRendererPool(float width, float height, float topLeftX, float topLeftY, Color color)
 {
 	RectangleRenderer* r = m_RendererPool.New(width, height, topLeftX, topLeftY, color);
 	m_RendererList.push_back(r);
 	return r;
 }
+
+RectangleCollider* WorldManager::CreateNewColliderPool()
+{
+	RectangleCollider* r = m_ColliderPool.New();
+	m_ColliderList.push_back(r);
+	return r;
+}
+
+CollisionColorChanger* WorldManager::CreateNewColorChangerPool()
+{
+	CollisionColorChanger* c = m_CollisionColorChangerPool.New();
+	m_CollisionColorChangerList.push_back(c);
+	return c;
+}
+
+CollisionColorChanger* WorldManager::CreateNewColorChangerPool(Color changedColor, Color defaultColor)
+{
+	CollisionColorChanger* c = m_CollisionColorChangerPool.New(changedColor, defaultColor);
+	m_CollisionColorChangerList.push_back(c);
+	return c;
+}
+
 
 #pragma endregion
 

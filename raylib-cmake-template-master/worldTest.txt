@@ -9,7 +9,27 @@ this
 # this should spawn in a gameobject with a transform component and a renderer and an empty color changer#
 gameobject
 {
-	name(test)
+	component(0)
+	{
+	x500;
+	y200;
+	}
+	component(1)
+	component(2)
+	{
+	w50;
+	h50;
+	x500;
+	y200;
+	r1;
+	g256;
+	b1;
+	a256;
+	}
+}
+
+gameobject
+{
 	component(0)
 	{
 	x200;
@@ -19,8 +39,8 @@ gameobject
 	{
 	w50;
 	h50;
-	x500;
-	y500;
+	x200;
+	y200;
 	r256;
 	g256;
 	b256;

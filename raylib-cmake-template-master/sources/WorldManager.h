@@ -42,21 +42,16 @@ private:
 	GameObject* CreateEmptyGO();
 
 	void AddNewComponent(GameObject* gameobject, ComponentTypes type);
-	//void AddTransform(GameObject* gameobject);
-	//void AddPlayerController(GameObject* gameobject);
-	//void AddCollider(GameObject* gameobject);
-	//void AddRenderer(GameObject* gameobject);
-	//void AddColorChanger(GameObject* gameobject);
 
 	// Components
-	NewTransform* CreateNewTransform();
-	NewTransform* CreateNewTransform(float x, float y);
-	CollisionColorChanger* CreateNewColorChanger();
-	CollisionColorChanger* CreateNewColorChanger(Color changedColor, Color defaultColor);
-	PlayerController* CreateNewController();
-	RectangleCollider* CreateNewCollider();
-	RectangleRenderer* CreateNewRenderer();
-	RectangleRenderer* CreateNewRenderer(float width, float height, float topLeftX, float topLeftY, Color color); //TODO: change this so that there are only 4 variables max passed into the function
+	NewTransform* CreateNewTransformPool();
+	NewTransform* CreateNewTransformPool(float x, float y);
+	CollisionColorChanger* CreateNewColorChangerPool();
+	CollisionColorChanger* CreateNewColorChangerPool(Color changedColor, Color defaultColor);
+	PlayerController* CreateNewControllerPool();
+	RectangleCollider* CreateNewColliderPool();
+	RectangleRenderer* CreateNewRendererPool();
+	RectangleRenderer* CreateNewRendererPool(float width, float height, float topLeftX, float topLeftY, Color color); //TODO: change this so that there are only 4 variables max passed into the function
 
 	// Helpers
 	void SpawnPlayerGameObject(NewTransform* playerTransform);
