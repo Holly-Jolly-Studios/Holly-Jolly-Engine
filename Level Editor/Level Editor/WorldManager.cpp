@@ -26,6 +26,9 @@ WorldManager* WorldManager::GetInstance()
 	}
 }
 
+float tempR = 1.0f;
+float tempG = 1.0f;
+float tempB = 1.0f;
 
 // Loop
 void WorldManager::GameLoop()
@@ -33,22 +36,35 @@ void WorldManager::GameLoop()
 	int frame = 0;
 	float targetTime = 16.67;
 
+	Color col = { tempR, tempG, tempB, tempA };
+
+	ClearBackground(col);
+
+
 	while (!WindowShouldClose())
 	{
 		std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
 		BeginDrawing();
 
-		ClearBackground(RAYWHITE);
 
 		// Put this somewhere else pls
 		rlImGuiBegin();
 		// render imgui content
 
 		// frame 1
-		ImGui::Begin("Hello!", NULL);
-		ImGui::Text("Hello World!");
+		ImGui::Begin("Title", NULL);
+		ImGui::Text("im so cooked");
+		ImGui::SliderFloat("BG R", &tempR, 0.0f, 256.0f);
+		ImGui::SliderFloat("BG G", &tempG, 0.0f, 256.0f);
+		ImGui::SliderFloat("BG B", &tempB, 0.0f, 256.0f);
 		ImGui::End();
+
+		Color col = { tempR, tempG, tempB, 256 };
+
+		ClearBackground(col);
+
+
 
 
 		// Frame allocators
@@ -104,13 +120,13 @@ WorldManager::WorldManager()
 	m_RendererPool.SetSize(MAX_COMPONENTS);
 
 	// BG gameobject
-	GameObject* background = NewGameObject();
+	/*GameObject* background = NewGameObject();
 
 	background->SetTransform(AddToTransformPool(0, 0));
 	background->GetTransform()->SetGameObjectID(background->GetObjectID());
 
 	background->SetRenderer(AddToRendererPool(Vector2{ 1000, 1000 }, Vector2{ -1000, 0 }, Color{ 0, 0, 0, 255 }));
-	background->GetRenderer()->SetGameObjectID(background->GetObjectID());
+	background->GetRenderer()->SetGameObjectID(background->GetObjectID());*/
 
 	// Player gameobject
 	GameObject* player = NewGameObject();
