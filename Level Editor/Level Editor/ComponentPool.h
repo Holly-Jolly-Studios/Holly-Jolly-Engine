@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "Components/Base/MyComponent.h"
 #include <vector>
 #include <cassert>
 
@@ -57,6 +56,20 @@ public:
 		}
 
 		assert(false); //should only reach this section if a component was not inside of the pool
+	}
+
+	void ClearPool()
+	{
+		for (int i = 0; i < m_Pool.size(); i++) //loops through the entire pool until it find the gameobject to delete
+		{
+			T* currentCom = &m_Pool[i];
+
+			m_InUse[i] = false;
+
+			currentCom->~T();
+		}
+
+		return;
 	}
 private:
 	std::vector<T> m_Pool;

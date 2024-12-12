@@ -26,9 +26,9 @@ WorldManager* WorldManager::GetInstance()
 	}
 }
 
-float tempR = 1.0f;
-float tempG = 1.0f;
-float tempB = 1.0f;
+
+char input[20];
+static ImVec4 myColor = { 1, 1, 1, 255 };
 
 // Loop
 void WorldManager::GameLoop()
@@ -36,7 +36,7 @@ void WorldManager::GameLoop()
 	int frame = 0;
 	float targetTime = 16.67;
 
-	Color col = { tempR, tempG, tempB, tempA };
+	Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
 
 	ClearBackground(col);
 
@@ -53,15 +53,37 @@ void WorldManager::GameLoop()
 		// render imgui content
 
 		// frame 1
-		ImGui::Begin("Title", NULL);
-		ImGui::Text("im so cooked");
-		ImGui::SliderFloat("BG R", &tempR, 0.0f, 256.0f);
-		ImGui::SliderFloat("BG G", &tempG, 0.0f, 256.0f);
-		ImGui::SliderFloat("BG B", &tempB, 0.0f, 256.0f);
+		ImGui::Begin("Editor", NULL);
+
+		// Pick background color
+		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Background Color");
+		ImGui::SameLine();
+		ImGui::ColorEdit4("Color", (float*)&myColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+		// Save button
+		if (ImGui::Button("Save Game"))
+			SaveButton();
+
+		// Clear world button
+		if (ImGui::Button("Clear World"))
+			ClearWorld();
+
+
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Input File Name To Load");
+
+		ImGui::InputText("Enter Text", input, IM_ARRAYSIZE(input));
+		//ImGui::SameLine();
+		if (ImGui::Button("Load Level"))
+		{
+			levelPath.assign(input);
+			LoadLevel();
+
+		}
+
 		ImGui::End();
 
-		Color col = { tempR, tempG, tempB, 256 };
-
+		// Change BG Color
+		Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
 		ClearBackground(col);
 
 
@@ -92,8 +114,6 @@ void WorldManager::GameLoop()
 		*m_Frames = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 		frameAllocator.Reset();
 
-		//Debug();
-
 		m_Frames = nullptr;
 		m_ActiveCollisions = nullptr;
 
@@ -119,33 +139,6 @@ WorldManager::WorldManager()
 	m_ColliderPool.SetSize(MAX_COMPONENTS);
 	m_RendererPool.SetSize(MAX_COMPONENTS);
 
-	// BG gameobject
-	/*GameObject* background = NewGameObject();
-
-	background->SetTransform(AddToTransformPool(0, 0));
-	background->GetTransform()->SetGameObjectID(background->GetObjectID());
-
-	background->SetRenderer(AddToRendererPool(Vector2{ 1000, 1000 }, Vector2{ -1000, 0 }, Color{ 0, 0, 0, 255 }));
-	background->GetRenderer()->SetGameObjectID(background->GetObjectID());*/
-
-	// Player gameobject
-	GameObject* player = NewGameObject();
-
-	player->SetTransform(AddToTransformPool(400, 280));
-	player->GetTransform()->SetGameObjectID(player->GetObjectID());
-
-	player->SetPlayerController(AddToPlayerControllerPool());
-	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());
-
-	player->SetCollider(AddToColliderPool());
-	player->GetCollider()->SetGameObjectID(player->GetObjectID());
-
-	player->SetRenderer(AddToRendererPool(Vector2{ 40, 40 }, Vector2{ 400, 280 }, Color{ 0, 100, 255, 255 }));
-	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
-
-	player->SetColorChanger(AddToCollisionColorChangerPool(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
-	player->GetCollisionColorChanger()->SetGameObjectID(player->GetObjectID());
-
 	LoadLevel();
 }
 
@@ -160,12 +153,7 @@ void WorldManager::UpdateGameObjects()
 	// Player Controller
 	for (i = 0; i < m_PlayerControllerList.size(); i++)
 	{
-		// Should only have one player to update
-		if (m_PlayerControllerList[i]->Update(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform()) == 1)
-		{
-			SpawnPlayer(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
-		}
-		//TODO: Check for multiple players, if there is more than 1 destroy others
+		m_PlayerControllerList[i]->Update(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
 	}
 
 	// Collisions
@@ -263,8 +251,10 @@ int WorldManager::GetComponentValuesFromStream(std::string stream)
 
 void WorldManager::LoadLevel()
 {
+	//printf("Loading level: %i", levelPath, "\n");
+
 	std::fstream file;
-	file.open(WORLD_FILE_PATH + WORLD_FILE_NAME);
+	file.open(levelPath);
 
 	if (file.is_open() && file.good())
 	{
@@ -478,6 +468,156 @@ void WorldManager::LoadLevel()
 }
 
 
+void WorldManager::SaveWorld()
+{
+	// If nothing was loaded, don't save
+	if (m_World.size() <= 1)
+	{
+		return;
+	}
+
+	std::ofstream file(levelPath);
+
+	if (file.is_open() && file.good())
+	{
+		// Puts gameobjects in file
+		int i;
+		for (i = 3; i <= m_World.size(); i++) //Loops through the world, and generate a file with the data
+		{
+			file << "gameobject\n";
+			file << "{";
+
+			if (m_World[i]->GetTransform() != nullptr)
+			{
+				file << "\tcomponent(";
+				file << "0)\n";
+				file << "\t{\n";
+
+				//Component values:
+				file << "\tx";
+				file << m_World[i]->GetTransform()->GetX();
+				file << ";\n";
+
+				file << "\ty";
+				file << m_World[i]->GetTransform()->GetY();
+				file << ";\n";
+
+				file << "\t}\n";
+
+			}
+
+			if (m_World[i]->GetRenderer() != nullptr)
+			{
+				bool changedColor = false;
+
+				if (m_World[i]->GetCollisionColorChanger() && m_World[i]->GetCollider()->GetIsColliding()) //Checks to see if a color changing object is currently changed
+				{
+					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetDefaultColor()); //Ensures that the default color of the renderer will be saved
+					changedColor = true;
+				}
+
+				file << "\tcomponent(";
+				file << "1)\n";
+				file << "\t{\n";
+
+				//Component values:
+
+				file << "\tw";
+				file << m_World[i]->GetRenderer()->GetWidth();
+				file << ";\n";
+
+				file << "\th";
+				file << m_World[i]->GetRenderer()->GetHeight();
+				file << ";\n";
+
+				file << "\tx";
+				file << m_World[i]->GetRenderer()->GetTopX();
+				file << ";\n";
+
+				file << "\ty";
+				file << m_World[i]->GetRenderer()->GetTopY();
+				file << ";\n";
+
+				Color color = m_World[i]->GetRenderer()->GetColor();
+
+				file << "\tr";
+				file << int(color.r);
+				file << ";\n";
+
+				file << "\tg";
+				file << int(color.g);
+				file << ";\n";
+
+				file << "\tb";
+				file << int(color.b);
+				file << ";\n";
+
+				file << "\ta";
+				file << int(color.a);
+				file << ";\n";
+
+				file << "\t}\n";
+
+				if (changedColor)
+				{
+					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetNewColor()); //Resets the color back to what it's suppost to display on the screen. 
+				}
+			}
+
+			if (m_World[i]->GetCollider() != nullptr)
+			{
+				file << "\tcomponent(";
+				file << "2)\n";
+				file << "\t{\n";
+
+				file << "\t}\n";
+			}
+
+			if (m_World[i]->GetPlayerController() != nullptr)
+			{
+				file << "\tcomponent(";
+				file << "3)\n";
+				file << "\t{\n";
+
+				file << "\t}\n";
+			}
+
+			if (m_World[i]->GetCollisionColorChanger() != nullptr)
+			{
+				file << "\tcomponent(";
+				file << "4)\n";
+				file << "\t{\n";
+
+				//Component values:
+
+				Color color = m_World[i]->GetCollisionColorChanger()->GetNewColor();
+
+				file << "\tr";
+				file << int(color.r);
+				file << ";\n";
+
+				file << "\tg";
+				file << int(color.g);
+				file << ";\n";
+
+				file << "\tb";
+				file << int(color.b);
+				file << ";\n";
+
+				file << "\ta";
+				file << int(color.a);
+				file << ";\n";
+
+				file << "\t}\n";
+			}
+
+			file << "}\n";
+		}
+		file.close();
+	}
+}
+
+
 // GameObject Helpers
 void WorldManager::AddComponent(GameObject* gameobject, ComponentTypes type)
 {
@@ -541,6 +681,35 @@ void WorldManager::SpawnPlayer(NewTransform* transform)
 	player->SetRenderer(AddToRendererPool(Vector2{ 80, 80 }, Vector2{ 800, 600 }, Color{ 255, 255, 0, 255 }));
 	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
 }
+
+void WorldManager::ClearWorld()
+{
+	/*
+	to delete an object we need to:
+	delete the gameobject itself
+	remove from pool and list
+	*/
+
+	m_TransformComponentList.clear();
+	m_TransformComponentPool.ClearPool();
+
+	m_PlayerControllerList.clear();
+	m_PlayerControllerPool.ClearPool();
+
+	m_RendererList.clear();
+	m_RendererPool.ClearPool();
+
+	m_ColliderList.clear();
+	m_ColliderPool.ClearPool();
+
+	m_ColliderColorChangerList.clear();
+	m_ColliderColorChangerPool.ClearPool();
+
+	m_World.clear();
+	printf("done clearing\n");
+
+}
+
 
 
 // Object ID
@@ -614,3 +783,18 @@ RectangleRenderer* WorldManager::AddToRendererPool(Vector2 size, Vector2 left, C
 	m_RendererList.push_back(temp);
 	return temp;
 } 
+
+
+// Debug
+void WorldManager::SaveButton()
+{
+	SaveWorld();
+	printf("testing 123 \n");
+}
+
+void WorldManager::DeleteAllGO()
+{
+
+}
+
+

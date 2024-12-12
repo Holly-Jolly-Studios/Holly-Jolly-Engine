@@ -13,8 +13,6 @@
 #include "imgui.h"
 #include "rlImGui.h"
 
-const std::string WORLD_FILE_PATH = "";
-const std::string WORLD_FILE_NAME = "level.txt";
 const int MAX_COMMENT_LENGTH = 256;
 const char COMMENT_SYMBOL = '#';
 const int POOL_SIZE = 20;
@@ -48,11 +46,13 @@ private:
 	std::unordered_map<int, GameObject*> m_World;
 	int GetComponentValuesFromStream(std::string stream);
 	void LoadLevel();
+	void SaveWorld();
 
 	// GameObject Helpers
 	void AddComponent(GameObject* gameobject, ComponentTypes type);
 	GameObject* NewGameObject();
 	void SpawnPlayer(NewTransform* transform);
+	void ClearWorld();
 
 	// GameObject ID
 	int GetNewObjectID();
@@ -72,12 +72,19 @@ private:
 	RectangleRenderer* AddToRendererPool(float width, float height, float leftX, float leftY, Color color);
 	RectangleRenderer* AddToRendererPool(Vector2 size, Vector2 left, Color color);
 
+	// Debug 
+	void SaveButton();
+	void DeleteAllGO();
+
 	#pragma endregion
 
 	#pragma region VARIABLES
 
 	// Static Instance
 	static WorldManager* gs_WorldManager;
+
+	// Level Serialization Path
+	std::string levelPath = "level.txt";
 
 	// Collision Vars
 	RectangleCollider* m_ActiveCollisions;

@@ -47,7 +47,7 @@
 
 const int TARGET_FPS = 60;
 
-#define WINDOW_TITLE "GPR-460 Assignment That Def Isn't Late"
+#define WINDOW_TITLE "Level Editor"
 
 int main(void)
 {
