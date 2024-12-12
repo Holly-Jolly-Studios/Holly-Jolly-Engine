@@ -33,12 +33,12 @@ float RectangleRenderer::GetHeight()
 	return m_Height;
 }
 
-float RectangleRenderer::GetTopLeftX()
+float RectangleRenderer::GetTopX()
 {
 	return m_TopLeftX;
 }
 
-float RectangleRenderer::GetTopLeftY()
+float RectangleRenderer::GetTopY()
 {
 	return m_TopLeftY;
 }

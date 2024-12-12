@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#define SCREEN_WIDTH (1920)
-#define SCREEN_HEIGHT (1080)
+#define SCREEN_WIDTH (800)
+#define SCREEN_HEIGHT (600)
 
 const int TARGET_FPS = 60;
 
@@ -16,14 +16,14 @@ int main(void)
     SetTargetFPS(TARGET_FPS);
 
     WorldManager::CreateInstance();
-    WorldManager* worldManager = WorldManager::GetInstance();
+    WorldManager* gameManager = WorldManager::GetInstance();
 
     // Loop until game is done
-    worldManager->GameLoop();
+    gameManager->GameLoop();
 
     // Cleanup
-    worldManager->DestroyInstance();
-    worldManager = nullptr;
+    gameManager->DestroyInstance();
+    gameManager = nullptr;
 
     CloseWindow();
 

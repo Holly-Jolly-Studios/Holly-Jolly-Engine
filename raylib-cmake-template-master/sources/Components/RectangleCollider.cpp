@@ -32,4 +32,10 @@ bool RectangleCollider::GetIsColliding()
 	}
 }
 
+void RectangleCollider::ResetCollision()
+{
+	m_IsColliding = false;
+}
+
+
 

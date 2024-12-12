@@ -1,87 +1,71 @@
 #include "WorldManager.h"
 
-const int MAX_COMPONENT_AMOUNT = 20;
+WorldManager* WorldManager::gs_WorldManager = nullptr;
 
-WorldManager* WorldManager::m_WorldManager = nullptr;
-
-WorldManager* WorldManager::GetInstance()
-{
-	if (m_WorldManager != nullptr)
-	{
-		return m_WorldManager;
-	}
-}
-
+// Instance Helpers
 void WorldManager::CreateInstance()
 {
-	if (m_WorldManager == nullptr)
+	if (gs_WorldManager == nullptr)
 	{
-		m_WorldManager = new WorldManager;
+		gs_WorldManager = new WorldManager;
 	}
 }
 
 void WorldManager::DestroyInstance()
 {
-	delete m_WorldManager;
-	m_WorldManager = nullptr;
+	delete gs_WorldManager;
+	gs_WorldManager = nullptr;
 }
 
-void WorldManager::Cleanup()
+WorldManager* WorldManager::GetInstance()
 {
-	ClearWorld();
+	if (gs_WorldManager != nullptr)
+	{
+		return gs_WorldManager;
+	}
 }
 
+
+// Loop
 void WorldManager::GameLoop()
 {
-	int frameNumber = 0;
-
+	int frame = 0;
 	float targetTime = 16.67;
-
-	//TODO: Put Display fps using the frame allocator
 
 	while (!WindowShouldClose())
 	{
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
 		BeginDrawing();
 
 		ClearBackground(RAYWHITE);
 
-		//Create frame allocators
-
+		// Frame allocators
 		StackAllocator frameAllocator;
-
 		m_Frames = frameAllocator.Alloc<int>();
 
-		//TODO: Loop through the collider components
-				// check if each collider is colliding
-				// if colliding, allocate that collider into the stack allocator
-				// numCollisions++; 
-
 		m_ActiveCollisions = (RectangleCollider*)frameAllocator.GetCurrentHead();
-		m_NumCollisions = 0;
+		m_Collisions = 0;
 
 		int i;
 		for (i = 0; i < m_ColliderList.size(); i++)
 		{
-			if (m_ColliderList[i]->GetIsColliding()) //if that collider is currently colliding
+			if (m_ColliderList[i]->GetIsColliding())
 			{
-				frameAllocator.Alloc<RectangleCollider*>(m_ColliderList[i]); //TODO: Fix this so that it can allocate properly
-				m_NumCollisions++;
+				frameAllocator.Alloc<RectangleCollider*>(m_ColliderList[i]);
+				m_Collisions++;
 			}
 		}
 
-		//std::cout << "NUM Collisions during this frame: " << numCollisions << std::endl;
-
-		UpdateWorld();
-		RenderWorld();
+		UpdateGameObjects();
+		Render();
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-		*m_Frames = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-
-		DebugFrames();
+		*m_Frames = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 		frameAllocator.Reset();
+
+		//Debug();
 
 		m_Frames = nullptr;
 		m_ActiveCollisions = nullptr;
@@ -91,275 +75,162 @@ void WorldManager::GameLoop()
 }
 
 
-// Private Functions
-
+// Constructor & Destructor
 WorldManager::WorldManager()
 {
-	// First GO index
+	// Init object IDs
 	m_ObjectIDIndex = 0;
 
-	// Pool setup
-	m_NewTransformPool.SetSize(MAX_COMPONENT_AMOUNT);
-	m_CollisionColorChangerPool.SetSize(MAX_COMPONENT_AMOUNT);
-	m_PlayerControllerPool.SetSize(MAX_COMPONENT_AMOUNT);
-	m_ColliderPool.SetSize(MAX_COMPONENT_AMOUNT);
-	m_RendererPool.SetSize(MAX_COMPONENT_AMOUNT);
+	// Init component pool sizes
+	m_TransformComponentPool.SetSize(MAX_COMPONENTS);
+	m_ColliderColorChangerPool.SetSize(MAX_COMPONENTS);
+	m_PlayerControllerPool.SetSize(MAX_COMPONENTS);
+	m_ColliderPool.SetSize(MAX_COMPONENTS);
+	m_RendererPool.SetSize(MAX_COMPONENTS);
 
-	// BG
-	GameObject* background = new GameObject;
-	background->SetObjectID(GetNewGOObjectID());
+	// BG gameobject
+	GameObject* background = NewGameObject();
 
-	background->SetTransform(CreateNewTransformPool(0, 0));
+	background->SetTransform(AddToTransformPool(0, 0));
 	background->GetTransform()->SetGameObjectID(background->GetObjectID());
 
-	background->SetRenderer(CreateNewRendererPool(13000, 8000, -6000, 0, Color{ 0, 50, 25, 255 }));
+	background->SetRenderer(AddToRendererPool(Vector2{ 1000, 1000 }, Vector2{ -1000, 0 }, Color{ 0, 0, 0, 255 }));
 	background->GetRenderer()->SetGameObjectID(background->GetObjectID());
 
-	// Player
-	GameObject* player = new GameObject;
-	player->SetObjectID(GetNewGOObjectID());
+	// Player gameobject
+	GameObject* player = NewGameObject();
 
-	player->SetTransform(CreateNewTransformPool(500, 500));
+	player->SetTransform(AddToTransformPool(400, 280));
 	player->GetTransform()->SetGameObjectID(player->GetObjectID());
 
-	/*player->SetPlayerController(CreateNewControllerPool());
-	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());*/
+	player->SetPlayerController(AddToPlayerControllerPool());
+	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());
 
-	player->SetCollider(CreateNewColliderPool());
+	player->SetCollider(AddToColliderPool());
 	player->GetCollider()->SetGameObjectID(player->GetObjectID());
 
-	player->SetRenderer(CreateNewRendererPool(40, 40, 400, 280, Color{ 0, 100, 255, 255 }));
+	player->SetRenderer(AddToRendererPool(Vector2{ 40, 40 }, Vector2{ 400, 280 }, Color{ 0, 100, 255, 255 }));
 	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
 
-	player->SetColorChanger(CreateNewColorChangerPool(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
+	player->SetColorChanger(AddToCollisionColorChangerPool(Color{ 255, 0, 0, 255 }, Color{ 0, 100, 255, 255 }));
 	player->GetCollisionColorChanger()->SetGameObjectID(player->GetObjectID());
 
-	//m_World.emplace(player->GetObjectID(), player);
-
-
-	LoadWorld();
+	LoadLevel();
 }
 
-WorldManager::~WorldManager()
+WorldManager::~WorldManager() = default;
+
+
+// Loop Other
+void WorldManager::UpdateGameObjects()
 {
-	// Do nothing
-}
+	int i, k;
 
-
-void WorldManager::UpdateWorld()
-{
-	int i, j;
-
-	// Update player controller
+	// Player Controller
 	for (i = 0; i < m_PlayerControllerList.size(); i++)
 	{
-		
-		int players = m_PlayerControllerList[i]->Update(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
-		//int players = m_PlayerControllerList.size();
-
-		// Check player count, if more than 1 delete the extra
-		if (players == 0)
+		// Should only have one player to update
+		if (m_PlayerControllerList[i]->Update(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform()) == 1)
 		{
-			// do nothing
+			SpawnPlayer(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
 		}
-		else if (players == 1)
-		{
-			int temp1 = m_PlayerControllerList[i]->GetGameObjectID();
-			auto temp2 = m_World[temp1];
+		//TODO: Check for multiple players, if there is more than 1 destroy others
+	}
 
-			SpawnPlayerGameObject(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform());
+	// Collisions
+	bool isColliding = false;
+	for (i = 0; i < m_ColliderList.size(); i++)
+	{
+		isColliding = false;
+
+		for (k = 0; k < m_ColliderList.size(); k++)
+		{
+			if (m_ColliderList[i] != m_ColliderList[k])
+			{
+				GameObject* gameobject1 = m_World[m_ColliderList[i]->GetGameObjectID()];
+				GameObject* gameobject2 = m_World[m_ColliderList[k]->GetGameObjectID()];
+
+				bool collision1 = m_ColliderList[i]->CheckCollision(Rectangle{ gameobject1->GetTransform()->GetX(),
+					gameobject1->GetTransform()->GetY(),
+					gameobject1->GetRenderer()->GetWidth(),
+					gameobject1->GetRenderer()->GetHeight() },
+					Rectangle{ gameobject2->GetTransform()->GetX(),
+					gameobject2->GetTransform()->GetY(),
+					gameobject2->GetRenderer()->GetWidth(),
+					gameobject2->GetRenderer()->GetHeight() });
+
+				bool collision2 = m_ColliderList[k]->CheckCollision(Rectangle{ gameobject1->GetTransform()->GetX(),
+					gameobject1->GetTransform()->GetY(), gameobject1->GetRenderer()->GetWidth(),
+					gameobject1->GetRenderer()->GetHeight() }, Rectangle{ gameobject2->GetTransform()->GetX(),
+					gameobject2->GetTransform()->GetY(), gameobject2->GetRenderer()->GetWidth(),
+					gameobject2->GetRenderer()->GetHeight() });
+
+				if (collision1 || collision2)
+				{
+					isColliding = true;
+				}
+			}
+		}
+		if (!isColliding)
+		{
+			// Reset all colliders even if not collider so none of the bools are the wrong value
+			m_ColliderList[i]->ResetCollision();
+		}
+	}
+
+	// Collision Color Changer
+	for (i = 0; i < m_ColliderColorChangerList.size(); i++)
+	{
+		bool hasCollided = m_ColliderColorChangerList[i]->Update(m_World[m_ColliderColorChangerList[i]->GetGameObjectID()]->GetCollider()->GetIsColliding());
+
+		if (hasCollided)
+		{
+			// If you havent changed colors, switch. Otherwiese switch back
+			if (m_ColliderColorChangerList[i]->GetIsDefaultColor())
+			{
+				m_World[m_ColliderColorChangerList[i]->GetGameObjectID()]->GetRenderer()->SetColor(m_ColliderColorChangerList[i]->GetDefaultColor());
+			}
+			else
+			{
+				m_World[m_ColliderColorChangerList[i]->GetGameObjectID()]->GetRenderer()->SetColor(m_ColliderColorChangerList[i]->GetNewColor());
+			}
+		}
+	}
+}
+
+void WorldManager::Render()
+{
+	for (int i = 0; i < m_RendererList.size(); i++)
+	{
+		RectangleRenderer* renderer = m_RendererList[i];
+		if (renderer == nullptr)
+		{
+			return;
 		}
 		else
 		{
-			DeleteFromWorld(m_World[GetClosestGO(m_World[m_PlayerControllerList[i]->GetGameObjectID()]->GetTransform())->GetObjectID()]);
-		}
-	}
-
-	//Check for collisions
-	for (i = 0; i < m_ColliderList.size(); i++)
-	{
-		for (j = 0; j < m_ColliderList.size(); j++)
-		{
-			if (m_ColliderList[i] != m_ColliderList[j])
+			if (m_World[renderer->GetGameObjectID()]->GetTransform() == NULL)
 			{
-				GameObject* go1 = m_World[m_ColliderList[i]->GetGameObjectID()];
-				GameObject* go2 = m_World[m_ColliderList[j]->GetGameObjectID()];
-				m_ColliderList[i]->CheckCollision(Rectangle{ go1->GetTransform()->GetX(), go1->GetTransform()->GetY(), go1->GetRenderer()->GetWidth(), go1->GetRenderer()->GetHeight() }, Rectangle{ go2->GetTransform()->GetX(), go2->GetTransform()->GetY(), go2->GetRenderer()->GetWidth(), go2->GetRenderer()->GetHeight() });
-				m_ColliderList[j]->CheckCollision(Rectangle{ go1->GetTransform()->GetX(), go1->GetTransform()->GetY(), go1->GetRenderer()->GetWidth(), go1->GetRenderer()->GetHeight() }, Rectangle{ go2->GetTransform()->GetX(), go2->GetTransform()->GetY(), go2->GetRenderer()->GetWidth(), go2->GetRenderer()->GetHeight() });
-			}
-		}
-	}
-
-	//Update collision collor changer
-	for (i = 0; i < m_CollisionColorChangerList.size(); i++)
-	{
-		bool colliding = m_CollisionColorChangerList[i]->Update(m_World[m_CollisionColorChangerList[i]->GetGameObjectID()]->GetCollider()->GetIsColliding());
-
-		if (colliding)
-		{
-			if (m_CollisionColorChangerList[i]->GetIsDefaultColor())
-			{
-				m_World[m_CollisionColorChangerList[i]->GetGameObjectID()]->GetRenderer()->SetColor(m_CollisionColorChangerList[i]->GetDefaultColor());
+				DrawRectangle(renderer->GetTopX(), renderer->GetTopY(), renderer->GetWidth(), renderer->GetHeight(), renderer->GetColor());
 			}
 			else
-			{
-				m_World[m_CollisionColorChangerList[i]->GetGameObjectID()]->GetRenderer()->SetColor(m_CollisionColorChangerList[i]->GetNewColor());
-			}
-		}
-	}
-}
-
-void WorldManager::RenderWorld()
-{
-	int i;
-
-	for (i = 0; i < m_RendererList.size(); i++)
-	{
-		RectangleRenderer* renderer = m_RendererList[i];
-		if (renderer != nullptr)
-		{
-			if (m_World[renderer->GetGameObjectID()]->GetTransform() != NULL)
 			{
 				DrawRectangle(m_World[renderer->GetGameObjectID()]->GetTransform()->GetX(), m_World[renderer->GetGameObjectID()]->GetTransform()->GetY(), renderer->GetWidth(), renderer->GetHeight(), renderer->GetColor());
 			}
-			else
-			{
-				DrawRectangle(renderer->GetTopLeftX(), renderer->GetTopLeftY(), renderer->GetWidth(), renderer->GetHeight(), renderer->GetColor());
-			}
 		}
 	}
 }
 
-void WorldManager::ClearWorld()
+
+// Level Serialization
+int WorldManager::GetComponentValuesFromStream(std::string stream)
 {
-	// clear
+	// Gets rid of first value, which isn't our value, and returns an int converted from the string
+	stream.erase(0, 1);
+	return std::atoi(stream.c_str());
 }
 
-int WorldManager::GetNewGOObjectID()
-{
-	m_ObjectIDIndex++;
-	return m_ObjectIDIndex;
-}
-
-void WorldManager::DebugFrames()
-{
-	if (IsKeyDown(KEY_F))
-	{
-		printf("Time for frame (ms): %i \n", *m_Frames);
-	}
-	else if (IsKeyDown(KEY_C))
-	{
-		printf("Number of collisions this frame: %i \n", m_NumCollisions);
-	}
-}
-
-void WorldManager::SpawnPlayerGameObject(NewTransform* playerTransform)
-{
-	GameObject* player = new GameObject;
-	player->SetObjectID(GetNewGOObjectID());
-
-	player->SetTransform(CreateNewTransformPool(playerTransform->GetX() + 10, playerTransform->GetY() + 10));
-	player->GetTransform()->SetGameObjectID(player->GetObjectID());
-
-	player->SetPlayerController(CreateNewControllerPool());
-	player->GetPlayerController()->SetGameObjectID(player->GetObjectID());
-
-	player->SetCollider(CreateNewColliderPool());
-	player->GetCollider()->SetGameObjectID(player->GetObjectID());
-
-	player->SetRenderer(CreateNewRendererPool(80, 80, 800, 600, Color{ 255, 255, 0, 255 }));
-	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
-
-	m_World.emplace(player->GetObjectID(), player);
-}
-
-void WorldManager::DeleteFromWorld(GameObject* go)
-{
-	// Delete each component then delete based off of game object id
-	if (go->GetCollider() != NULL)
-	{
-		auto found = std::find(m_ColliderList.begin(), m_ColliderList.end(), (go->GetCollider()));
-		if (found != m_ColliderList.end()) {
-			m_ColliderList.erase(found);
-		}
-
-		m_ColliderPool.Delete(go->GetCollider());
-	}
-
-	if (go->GetCollisionColorChanger() != NULL)
-	{
-		auto found = std::find(m_CollisionColorChangerList.begin(), m_CollisionColorChangerList.end(), (go->GetCollisionColorChanger()));
-		if (found != m_CollisionColorChangerList.end()) {
-			m_CollisionColorChangerList.erase(found);
-		}
-
-		m_CollisionColorChangerPool.Delete(go->GetCollisionColorChanger());
-	}
-
-	if (go->GetPlayerController() != NULL)
-	{
-		auto found = std::find(m_PlayerControllerList.begin(), m_PlayerControllerList.end(), (go->GetPlayerController()));
-		if (found != m_PlayerControllerList.end()) {
-			m_PlayerControllerList.erase(found);
-		}
-
-		m_PlayerControllerPool.Delete(go->GetPlayerController());
-	}
-
-	if (go->GetRenderer() != NULL)
-	{
-		auto found = std::find(m_RendererList.begin(), m_RendererList.end(), (go->GetRenderer()));
-		if (found != m_RendererList.end()) {
-			m_RendererList.erase(found);
-		}
-
-		m_RendererPool.Delete(go->GetRenderer());
-	}
-
-	if (go->GetTransform() != NULL)
-	{
-		auto found = std::find(m_NewTransformList.begin(), m_NewTransformList.end(), (go->GetTransform()));
-		if (found != m_NewTransformList.end()) {
-			m_NewTransformList.erase(found);
-		}
-
-		m_NewTransformPool.Delete(go->GetTransform());
-	}
-
-	m_World.erase(go->GetObjectID());
-}
-
-GameObject* WorldManager::GetClosestGO(NewTransform* transform)
-{
-	NewTransform* closest = NULL;
-	float closestDistance = 99999999.9f;
-
-	for (NewTransform* temp : m_NewTransformList)
-	{
-		if (temp != transform)
-		{
-			float x = transform->GetX() - temp->GetX();
-			float y = transform->GetY() - temp->GetY();
-
-			float distance = sqrt((x * x) + (y * y));
-
-			if (distance < closestDistance)
-			{
-				closestDistance = distance;
-				closest = temp;
-			}
-		}
-	}
-	return m_World[closest->GetGameObjectID()];
-}
-
-const std::string WORLD_FILE_NAME = "worldTest.txt";
-const std::string WORLD_FILE_PATH = "../../../";
-const int MAX_COMMENT_LENGTH = 256;
-const char COMMENT = '#';
-
-
-void WorldManager::LoadWorld()
+void WorldManager::LoadLevel()
 {
 	std::fstream file;
 	file.open(WORLD_FILE_PATH + WORLD_FILE_NAME);
@@ -371,157 +242,128 @@ void WorldManager::LoadWorld()
 		std::string previousInput;
 
 		bool isEditingComponent = false;
-		int currentComponentIndex = 0;
-		GameObject* currentGameObject = nullptr;
+		GameObject* tempGameObject = nullptr;
+		int currentComponent = 0;
+
+		/*
+		0 - transform (x, y)
+		1 - renderer (x, y, w, h, rgba)
+		2 - collider
+		3 - player
+		4 - color collider (rgba)
+		*/
 
 		while (!file.eof())
 		{
 			file >> input;
-
-			// If input is comment char then ignore whats inside
-			if (input == COMMENT)
+			if (input == COMMENT_SYMBOL)
 			{
-				file.ignore(MAX_COMMENT_LENGTH, COMMENT);
+				file.ignore(MAX_COMMENT_LENGTH, COMMENT_SYMBOL);
 			}
-
-			// If component exists and your stream isn't empty and if end of value (indicated with ;)
 			else if (isEditingComponent && currentInput.size() >= 2 && input == ';')
 			{
-				switch (currentComponentIndex)
+				switch (currentComponent)
 				{
-				// Transform
 				case 0:
+					// Transform
 					if (currentInput[0] == 'x')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetTransform()->SetX(value);
-						printf("%i Setting x in transform to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetTransform()->SetX(value);
 					}
 					else if (currentInput[0] == 'y')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetTransform()->SetY(value);
-						printf("%i Setting y in transform to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetTransform()->SetY(value);
 					}
-					else
-					{
-						int value = GetComponentValue(currentInput);
-						printf("%i Invalid entry: ", value);
-					}
-					
 					break;
 
-				// Player controller
 				case 1:
-					// Do nothing, no values needed
-					break;
-
-				// Renderer
-				case 2: 
-					if (currentGameObject->GetRenderer() == nullptr)
+					// Renderer
+					if (tempGameObject->GetRenderer() == nullptr)
 					{
 						break;
 					}
-
-					// Based on value change either width, height, r, g, b, or a
 					if (currentInput[0] == 'w')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetWidth(value);
-						printf("%i Setting width in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetWidth(value);
 					}
 					else if (currentInput[0] == 'h')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetHeight(value);
-						printf("%i Setting height in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetHeight(value);
 					}
 					else if (currentInput[0] == 'x')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetTopLeftX(value);
-						printf("%i Setting x in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetTopLeftX(value);
 					}
 					else if (currentInput[0] == 'y')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetTopLeftY(value);
-						printf("%i Setting y in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetTopLeftY(value);
 					}
 					else if (currentInput[0] == 'r')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetRValue(value);
-						printf("%i Setting r in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetRValue(value);
 					}
 					else if (currentInput[0] == 'g')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetGValue(value);
-						printf("%i Setting g in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetGValue(value);
 					}
 					else if (currentInput[0] == 'b')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetBValue(value);
-						printf("%i Setting b in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetBValue(value);
 					}
 					else if (currentInput[0] == 'a')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetRenderer()->SetAValue(value);
-						printf("%i Setting a in renderer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetRenderer()->SetAValue(value);
 					}
-					else
-					{
-						int value = GetComponentValue(currentInput);
-						printf("%i Invalid entry: ", value);
-					}
-					
-					break;
-			
-				// Collision
-				case 3:
-					// do nothing, no values needed
+
 					break;
 
-				// Color Changer
-				case 4: 
-					// If no renderer or color changer then break
-					if (currentGameObject->GetRenderer() == nullptr || currentGameObject->GetCollisionColorChanger() == nullptr)
+				case 2:
+					// RectangleCollider has no values
+					break;
+
+				case 3:
+					// PlayerController has no values
+					break;
+
+				case 4:
+					// CollisionColorChanger
+					if (tempGameObject->GetRenderer() == nullptr || tempGameObject->GetCollisionColorChanger() == nullptr) //NOTE: Ensures that the color changer is not null when trying to add values to it
 					{
 						break;
 					}
 
-					if (currentInput[0] == 'r')
+					if (currentInput[0] = 'r')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetCollisionColorChanger()->SetRValue(value);
-						printf(" %i Setting r in color changer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetCollisionColorChanger()->SetRValue(value);
 					}
-					else if (currentInput[0] == 'g')
+					else if (currentInput[0] = 'g')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetCollisionColorChanger()->SetGValue(value);
-						printf(" %i Setting g in color changer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetCollisionColorChanger()->SetGValue(value);
 					}
-					else if (currentInput[0] == 'b')
+					else if (currentInput[0] = 'b')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetCollisionColorChanger()->SetBValue(value);
-						printf(" %i Setting b in color changer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetCollisionColorChanger()->SetBValue(value);
+
 					}
-					else if (currentInput[0] == 'a')
+					else if (currentInput[0] = 'a')
 					{
-						int value = GetComponentValue(currentInput);
-						currentGameObject->GetCollisionColorChanger()->SetAValue(value);
-						printf(" %i Setting a in color changer to: ", value);
+						int value = GetComponentValuesFromStream(currentInput);
+						tempGameObject->GetCollisionColorChanger()->SetAValue(value);
 					}
-					else
-					{
-						int value = GetComponentValue(currentInput);
-						printf(" %i  Invalid entry: ", value);
-					}
+
 					break;
 				}
 
@@ -539,78 +381,46 @@ void WorldManager::LoadWorld()
 
 					if (currentInput == "gameobject" && !isEditingComponent)
 					{
-						//currentLayer = 1;
-						printf("\nCreating new GameObject\n");
-						currentGameObject = CreateEmptyGO();
+						tempGameObject = NewGameObject();
 						previousInput = currentInput;
 
 					}
 					else if (currentInput == "component" && !isEditingComponent)
 					{
-						//currentLayer = 2;
-						printf("\nCreating new component\n");
-
 						previousInput = currentInput;
 					}
 					else
 					{
-						//if (previousInput == "name")
-						//{
-						//	// TODO: give this guy a name
-						//	std::string NAME = "";
-						//	currentGameObject->SetName(NAME);
-						//}
+						//NOTE: Using a switch for now to get it working:
+
 						if (previousInput == "component")
 						{
-							int componentID = std::atoi(currentInput.c_str());
+							int componentIndex = std::atoi(currentInput.c_str());
 
-							currentComponentIndex = componentID;
+							currentComponent = componentIndex;
 
-							// Only do if go exists
-							if (currentGameObject != nullptr)
+							if (tempGameObject != nullptr)
 							{
-								/*
-								0 - transform
-								1 - player
-								2 - rect rend
-								3 - rect col
-								4 - color col
-								*/
-								switch (componentID)
+								if (componentIndex == 0)
 								{
-								case 0: 
-									printf("\nCreating transform component on the given gameobject\n");
-									AddNewComponent(currentGameObject, transformComponent);
-
-									break;
-
-								case 1: 
-									printf("\nCreating player controller component on the given gameobject\n");
-									AddNewComponent(currentGameObject, playerControllerComponent);
-									break;
-									
-
-								case 2:
-									printf("\nCreating rectangle render component on the given gameobject\n");
-									AddNewComponent(currentGameObject, rectangleRendererComponent);
-
-									break;
-									
-
-								case 3:
-									printf("\nCreating rectangle collider component on the given gameobject\n");
-									AddNewComponent(currentGameObject, rectangleColliderComponent);
-									break;
-
-								case 4: 
-									printf("\nCreating color changer component on the given gameobject\n");
-									AddNewComponent(currentGameObject, collisionColorChangerComponent);
-
-									break;
-
-								default:
-									printf("\nNo component found :( \n");
-									break;
+									AddComponent(tempGameObject, transformComponent);
+								}
+								else if (componentIndex == 1)
+								{
+									AddComponent(tempGameObject, rectangleRendererComponent);
+								}
+								else if (componentIndex == 2)
+								{
+									AddComponent(tempGameObject, rectangleColliderComponent);
+								}
+								else if (componentIndex == 3)
+								{
+									AddComponent(tempGameObject, playerControllerComponent);
+								}
+								else if (componentIndex == 4)
+								{
+									AddComponent(tempGameObject, collisionColorChangerComponent);
+									tempGameObject->GetCollisionColorChanger()->SetDefaultColor(tempGameObject->GetRenderer()->GetColor());
 								}
 							}
 
@@ -618,7 +428,7 @@ void WorldManager::LoadWorld()
 						}
 						else
 						{
-							// do nothing otherwise
+							// Do nothing 
 						}
 
 						previousInput = currentInput;
@@ -629,8 +439,6 @@ void WorldManager::LoadWorld()
 				}
 
 				currentInput.push_back(input);
-
-				printf(" %i Input: ", input);
 			}
 		}
 	}
@@ -639,31 +447,13 @@ void WorldManager::LoadWorld()
 }
 
 
-int WorldManager::GetComponentValue(std::string stream)
-{
-	// Gets rid of first value, which isn't our value, and returns a int converted from our "string"
-	stream.erase(0, 1);
-	return std::atoi(stream.c_str());
-}
-
-
-#pragma region Game Object Components
-
-GameObject* WorldManager::CreateEmptyGO()
-{
-	// Create object, give it an ID, put in world, return object
-	GameObject* gameobject = new GameObject();
-	gameobject->SetObjectID(GetNewGOObjectID());
-	m_World.emplace(gameobject->GetObjectID(), gameobject);
-	return gameobject;
-}
-
-void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
+// GameObject Helpers
+void WorldManager::AddComponent(GameObject* gameobject, ComponentTypes type)
 {
 	switch (type)
 	{
 	case collisionColorChangerComponent:
-		gameobject->SetColorChanger(CreateNewColorChangerPool());
+		gameobject->SetColorChanger(AddToCollisionColorChangerPool());
 		gameobject->GetCollisionColorChanger()->SetGameObjectID(gameobject->GetObjectID());
 
 		if (gameobject->GetRenderer() != NULL)
@@ -673,21 +463,21 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 		break;
 
 	case transformComponent:
-		gameobject->SetTransform(CreateNewTransformPool());
+		gameobject->SetTransform(AddToTransformPool());
 		gameobject->GetTransform()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
 	case playerControllerComponent:
-		gameobject->SetPlayerController(CreateNewControllerPool());
+		gameobject->SetPlayerController(AddToPlayerControllerPool());
 		gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 	case rectangleColliderComponent:
-		gameobject->SetCollider(CreateNewColliderPool());
+		gameobject->SetCollider(AddToColliderPool());
 		gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
 	case rectangleRendererComponent:
-		gameobject->SetRenderer(CreateNewRendererPool());
+		gameobject->SetRenderer(AddToRendererPool());
 		gameobject->GetRenderer()->SetGameObjectID(gameobject->GetObjectID());
 		break;
 
@@ -697,71 +487,99 @@ void WorldManager::AddNewComponent(GameObject* gameobject, ComponentTypes type)
 	}
 }
 
-#pragma endregion
-
-
-
-
-
-#pragma region Component pools
-
-NewTransform* WorldManager::CreateNewTransformPool()
+GameObject* WorldManager::NewGameObject()
 {
-	NewTransform* t = m_NewTransformPool.New();
-	m_NewTransformList.push_back(t);
-	return t;
+	// Create new gameobject, give it an id, put in map, return
+	GameObject* tempGameObject = new GameObject();
+	tempGameObject->SetObjectID(GetNewObjectID());
+
+	m_World.emplace(tempGameObject->GetObjectID(), tempGameObject);
+	return tempGameObject;
 }
 
-NewTransform* WorldManager::CreateNewTransformPool(float x, float y)
+void WorldManager::SpawnPlayer(NewTransform* transform)
 {
-	NewTransform* t = m_NewTransformPool.New(x, y);
-	m_NewTransformList.push_back(t);
-	printf(" transform pool pushing back: ", t);
-	return t;
-}
+	GameObject* player = NewGameObject();
 
-PlayerController* WorldManager::CreateNewControllerPool()
-{
-	PlayerController* p = m_PlayerControllerPool.New();
-	m_PlayerControllerList.push_back(p);
-	return p;
-}
+	player->SetTransform(AddToTransformPool(transform->GetX() + 10, transform->GetY() + 10));
+	player->GetTransform()->SetGameObjectID(player->GetObjectID());
 
-RectangleRenderer* WorldManager::CreateNewRendererPool()
-{
-	RectangleRenderer* r = m_RendererPool.New();
-	m_RendererList.push_back(r);
-	return r;
-}
+	player->SetCollider(AddToColliderPool());
+	player->GetCollider()->SetGameObjectID(player->GetObjectID());
 
-RectangleRenderer* WorldManager::CreateNewRendererPool(float width, float height, float topLeftX, float topLeftY, Color color)
-{
-	RectangleRenderer* r = m_RendererPool.New(width, height, topLeftX, topLeftY, color);
-	m_RendererList.push_back(r);
-	return r;
-}
-
-RectangleCollider* WorldManager::CreateNewColliderPool()
-{
-	RectangleCollider* r = m_ColliderPool.New();
-	m_ColliderList.push_back(r);
-	return r;
-}
-
-CollisionColorChanger* WorldManager::CreateNewColorChangerPool()
-{
-	CollisionColorChanger* c = m_CollisionColorChangerPool.New();
-	m_CollisionColorChangerList.push_back(c);
-	return c;
-}
-
-CollisionColorChanger* WorldManager::CreateNewColorChangerPool(Color changedColor, Color defaultColor)
-{
-	CollisionColorChanger* c = m_CollisionColorChangerPool.New(changedColor, defaultColor);
-	m_CollisionColorChangerList.push_back(c);
-	return c;
+	player->SetRenderer(AddToRendererPool(Vector2{ 80, 80 }, Vector2{ 800, 600 }, Color{ 255, 255, 0, 255 }));
+	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
 }
 
 
-#pragma endregion
+// Object ID
+int WorldManager::GetNewObjectID()
+{
+	m_ObjectIDIndex++;
+	return m_ObjectIDIndex;
+}
 
+
+// Component Pool 
+NewTransform* WorldManager::AddToTransformPool()
+{
+	NewTransform* temp = m_TransformComponentPool.New();
+	m_TransformComponentList.push_back(temp);
+	return temp;
+}
+
+NewTransform* WorldManager::AddToTransformPool(float x, float y)
+{
+	NewTransform* temp = m_TransformComponentPool.New(x, y);
+	m_TransformComponentList.push_back(temp);
+	return temp;
+}
+
+CollisionColorChanger* WorldManager::AddToCollisionColorChangerPool()
+{
+	CollisionColorChanger* temp = m_ColliderColorChangerPool.New();
+	m_ColliderColorChangerList.push_back(temp);
+	return temp;
+}
+
+CollisionColorChanger* WorldManager::AddToCollisionColorChangerPool(Color newColor, Color defaultColor)
+{
+	CollisionColorChanger* temp = m_ColliderColorChangerPool.New(newColor, defaultColor);
+	m_ColliderColorChangerList.push_back(temp);
+	return temp;
+}
+
+PlayerController* WorldManager::AddToPlayerControllerPool()
+{
+	PlayerController* temp = m_PlayerControllerPool.New();
+	m_PlayerControllerList.push_back(temp);
+	return temp;
+}
+
+RectangleCollider* WorldManager::AddToColliderPool()
+{
+	RectangleCollider* temp = m_ColliderPool.New();
+	m_ColliderList.push_back(temp);
+	return temp;
+}
+
+RectangleRenderer* WorldManager::AddToRendererPool()
+{
+	RectangleRenderer* temp = m_RendererPool.New();
+	m_RendererList.push_back(temp);
+	return temp;
+}
+
+RectangleRenderer* WorldManager::AddToRendererPool(float width, float height, float leftX, float leftY, Color color)
+{
+	RectangleRenderer* temp = m_RendererPool.New(width, height, leftX, leftY, color);
+	m_RendererList.push_back(temp);
+	return temp;
+}
+
+RectangleRenderer* WorldManager::AddToRendererPool(Vector2 size, Vector2 left, Color color) // Only for background
+{
+	RectangleRenderer* temp = m_RendererPool.New(size.x, size.y, left.x, left.y, color);
+	m_RendererList.push_back(temp);
+	return temp;
+} 

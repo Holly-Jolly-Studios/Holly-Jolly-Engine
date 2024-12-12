@@ -13,8 +13,8 @@ public:
 	// Helpers
 	float GetWidth();
 	float GetHeight();
-	float GetTopLeftX();
-	float GetTopLeftY();
+	float GetTopX();
+	float GetTopY();
 	Color GetColor();
 
 	void SetWidth(float newWidth);

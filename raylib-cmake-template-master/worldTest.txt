@@ -1,30 +1,48 @@
-# should ignore this #
-
-# 
-and
-this
-#
-
-
-# this should spawn in a gameobject with a transform component and a renderer and an empty color changer#
 gameobject
 {
 	component(0)
 	{
-	x500;
+	x200;
+	y100;
+	}
+	component(1)
+	{
+	w40;
+	h40;
+	x400;
+	y800;
+	r255;
+	g0;
+	b255;
+	a255;
+	}
+	component(2)
+}
+gameobject
+{
+	component(0)
+	{
+	x400;
 	y200;
 	}
 	component(1)
-	component(2)
 	{
-	w50;
-	h50;
-	x500;
-	y200;
-	r1;
-	g256;
-	b1;
-	a256;
+	w60;
+	h60;
+	x800;
+	y400;
+	r0;
+	g255;
+	b156;
+	a255;
+	}
+	component(2)
+	component(4)
+	{
+	r0
+	g0
+	b0
+	a255
 	}
 }
 
@@ -32,19 +50,190 @@ gameobject
 {
 	component(0)
 	{
-	x200;
-	y200;
+	x20;
+	y20;
+	}
+	component(1)
+	{
+	w20;
+	h20;
+	x20;
+	y20;
+	r0;
+	g255;
+	b156;
+	a255;
 	}
 	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x50;
+	y60;
+	}
+	component(1)
+	{
+	w30;
+	h30;
+	x50;
+	y60;
+	r0;
+	g255;
+	b156;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x100;
+	y60;
+	}
+	component(1)
+	{
+	w100;
+	h30;
+	x50;
+	y60;
+	r0;
+	g1;
+	b156;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x60;
+	y100;
+	}
+	component(1)
+	{
+	w30;
+	h100;
+	x50;
+	y60;
+	r100;
+	g256;
+	b0;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x200;
+	y460;
+	}
+	component(1)
+	{
+	w75;
+	h40;
+	x50;
+	y60;
+	r100;
+	g256;
+	b0;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x60;
+	y100;
+	}
+	component(1)
+	{
+	w30;
+	h100;
+	x50;
+	y60;
+	r100;
+	g256;
+	b0;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x400;
+	y300;
+	}
+	component(1)
+	{
+	w100;
+	h200;
+	x50;
+	y60;
+	r0;
+	g60;
+	b100;
+	a255;
+	}
+	component(2)
+}
+
+gameobject
+{
+	component(0)
+	{
+	x500;
+	y100;
+	}
+	component(1)
 	{
 	w50;
-	h50;
-	x200;
-	y200;
-	r256;
-	g256;
-	b256;
-	a256;
+	h300;
+	x50;
+	y60;
+	r200;
+	g100;
+	b150;
+	a255;
 	}
-	component(4)
+	component(2)
 }
+
+gameobject
+{
+	component(0)
+	{
+	x100;
+	y400;
+	}
+	component(1)
+	{
+	w50;
+	h300;
+	x50;
+	y60;
+	r200;
+	g100;
+	b150;
+	a255;
+	}
+	component(2)
+}
+
+# ignored #
+
