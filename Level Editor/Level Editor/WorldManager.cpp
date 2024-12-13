@@ -65,7 +65,7 @@ void WorldManager::GameLoop()
 		rlImGuiBegin();
 
 		// User input
-		if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		if(IsKeyPressed(KEY_SPACE))
 		{
 			SpawnGameObjectOnMouse();
 		}
@@ -93,6 +93,13 @@ void WorldManager::GameLoop()
 					}
 				}
 			}
+		}
+
+		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && m_SelectedGO != NULL)
+		{
+			Vector2 pos = GetMousePosition();
+			x = pos.x - (width / 2);
+			y = pos.y - (height / 2);
 		}
 
 		// render imgui content
@@ -149,7 +156,7 @@ void WorldManager::GameLoop()
 			ImGui::ColorEdit3("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
 			ImGui::SliderInt("Transform X", &x, 0, 800);
-			ImGui::SliderInt("Transform Y", &y, 0, 450);
+			ImGui::SliderInt("Transform Y", &y, 0, 600);
 
 			ImGui::SliderFloat("Renderer W", &width, 0, 200);
 			ImGui::SliderFloat("Renderer H", &height, 0, 200);
@@ -812,6 +819,7 @@ void WorldManager::ClearWorld()
 	m_ColliderColorChangerPool.ClearPool();
 
 	ClearObjectIDs();
+	CloseEditUI();
 
 	printf("done clearing\n");
 }
@@ -985,6 +993,8 @@ void WorldManager::CloseEditUI()
 {
 	if(m_ShowGameObjectEditor)
 		m_ShowGameObjectEditor = false;
+
+	m_SelectedGO = NULL;
 }
 
 Color WorldManager::GetRandomColor()
