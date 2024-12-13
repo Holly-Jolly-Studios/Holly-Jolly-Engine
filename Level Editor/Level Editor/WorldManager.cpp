@@ -28,12 +28,18 @@ WorldManager* WorldManager::GetInstance()
 
 
 char input[20];
+char saveInput[20];
 static ImVec4 myColor = { 1, 1, 1, 255 };
 static ImVec4 goColor = { 1, 1, 1, 255 };
 int x = 0;
 int y = 0;
 
 bool foo[4] = { false, false, false, false };
+
+std::string tempFilePath = "";
+
+std::string items[] = { "a", "b", "c" }; // defined somewhere
+int selectedIndex = 0; // you need to store this state somewhere
 
 
 // Loop
@@ -82,35 +88,36 @@ void WorldManager::GameLoop()
 		// render imgui content
 		ImGui::Begin("Editor", NULL);
 
-		// Pick background color
-		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Background Color");
+		// World Edits
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "World Edit");
+	
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Background Color");
 		ImGui::SameLine();
 		ImGui::ColorEdit4("Color", (float*)&myColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
-		// Save button
-		if (ImGui::Button("Save Game"))
-			SaveButton();
-
-		// Clear world button
 		if (ImGui::Button("Clear World"))
 			ClearWorld();
+
+
+		// Save
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Save Level");
+
+		ImGui::InputText("  ", saveInput, IM_ARRAYSIZE(saveInput));
+		if (ImGui::Button("Save Game"))
+		{
+			saveFileName.assign(saveInput);
+			SaveButton();
+		}
 		
-		// Remove All Transforms
-		/*if (ImGui::Button("Kill Transforms"))
-			DeleteAllGOOfType(transformComponent);*/
 
-		
+		// Load
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Load Level");
 
-
-		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Input File Name To Load");
-
-		ImGui::InputText("Enter Text", input, IM_ARRAYSIZE(input));
-		//ImGui::SameLine();
+		ImGui::InputText(" ", input, IM_ARRAYSIZE(input));
 		if (ImGui::Button("Load Level"))
 		{
 			levelPath.assign(input);
-			LoadLevel();
-
+			LoadLevel(input);
 		}
 
 
@@ -182,16 +189,9 @@ void WorldManager::GameLoop()
 		//	ImGui::End();
 		//}
 
-
-
-
-
 		// Change BG Color
 		Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
 		ClearBackground(col);
-
-
-
 
 		// Frame allocators
 		StackAllocator frameAllocator;
@@ -245,8 +245,9 @@ WorldManager::WorldManager()
 
 	// Debug
 	m_ShowGameObjectEditor = false;
+	m_Saving = false;
 
-	LoadLevel();
+	LoadLevel(levelPath + fileExtention);
 }
 
 WorldManager::~WorldManager() = default;
@@ -356,16 +357,16 @@ int WorldManager::GetComponentValuesFromStream(std::string stream)
 	return std::atoi(stream.c_str());
 }
 
-void WorldManager::LoadLevel()
+void WorldManager::LoadLevel(std::string fileToOpen)
 {
 	ClearWorld();
 
 	std::fstream file;
-	file.open(levelPath);
+	file.open(fileToOpen);
 
 	if (file.fail())
 	{
-		printf("", levelPath, " does not exist!\n");
+		printf("", levelPath, fileExtention, " does not exist!\n");
 	}
 
 	if (file.is_open() && file.good())
@@ -590,7 +591,8 @@ void WorldManager::SaveWorld()
 		return;
 	}
 
-	std::ofstream file(levelPath);
+	std::ofstream file(saveFileName + fileExtention);
+	numFiles++;
 
 	if (file.is_open() && file.good())
 	{
@@ -860,6 +862,8 @@ void WorldManager::ClearWorld()
 	remove from pool and list
 	*/
 
+	m_World.clear();
+
 	m_TransformComponentList.clear();
 	m_TransformComponentPool.ClearPool();
 
@@ -875,7 +879,6 @@ void WorldManager::ClearWorld()
 	m_ColliderColorChangerList.clear();
 	m_ColliderColorChangerPool.ClearPool();
 
-	m_World.clear();
 	printf("done clearing\n");
 }
 

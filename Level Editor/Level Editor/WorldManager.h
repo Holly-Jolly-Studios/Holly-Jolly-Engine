@@ -46,7 +46,7 @@ private:
 	// Level Serialization
 	std::unordered_map<int, GameObject*> m_World;
 	int GetComponentValuesFromStream(std::string stream);
-	void LoadLevel();
+	void LoadLevel(std::string fileToOpen);
 	void SaveWorld();
 
 	// GameObject Helpers
@@ -98,7 +98,10 @@ private:
 	static WorldManager* gs_WorldManager;
 
 	// Level Serialization Path
-	std::string levelPath = "level.txt";
+	int numFiles = 0;
+	std::string levelPath = "level";
+	std::string fileExtention = ".txt";
+	std::string saveFileName = "";
 
 	// Collision Vars
 	RectangleCollider* m_ActiveCollisions;
@@ -126,6 +129,7 @@ private:
 	// Debug
 	int* m_Frames;
 	bool m_ShowGameObjectEditor;
+	bool m_Saving;
 
 	#pragma endregion
 };
