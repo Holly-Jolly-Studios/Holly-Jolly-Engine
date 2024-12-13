@@ -56,9 +56,15 @@ void WorldManager::GameLoop()
 
 		// Put this somewhere else pls
 		rlImGuiBegin();
-		// render imgui content
 
-		// frame 1
+		// User input
+		if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		{
+			printf("hello!!!!!!");
+			SpawnGameObjectOnMouse();
+		}
+
+		// render imgui content
 		ImGui::Begin("Editor", NULL);
 
 		// Pick background color
@@ -73,10 +79,6 @@ void WorldManager::GameLoop()
 		// Clear world button
 		if (ImGui::Button("Clear World"))
 			ClearWorld();
-		
-		// Spawn GameObject
-		if (ImGui::Button("Spawn GameObject"))
-			SpawnGameObjectOnMouse();
 		
 		// Remove All Transforms
 		/*if (ImGui::Button("Kill Transforms"))
@@ -108,16 +110,12 @@ void WorldManager::GameLoop()
 		if (m_ShowGameObjectEditor)
 		{
 			// TODO: Edit specific gameobject
-			GameObject* clone;
+			GameObject* clone = new GameObject();
 			Color temp;
 
 			ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-			// Spawn GameObject
-			if (ImGui::Button("Spawn GameObject"))
-				SpawnGameObjectOnMouse();
-
-			// Pick background color
+			// Pick GO Color
 			ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
 			ImGui::SameLine();
 			ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
@@ -993,15 +991,16 @@ void WorldManager::DeleteAllGOOfType(ComponentTypes type)
 
 void WorldManager::SpawnGameObjectOnMouse()
 {
-	/*Vector2 pos = GetMousePosition();
-	GameObject* temp = NewGameObject();
-	temp->
-	temp->SetTransform(new NewTransform{ pos.x, pos.y });*/
+	Vector2 pos = GetMousePosition();
+
+	GameObject* tempGO = NewGameObject();
+	tempGO->SetTransform(AddToTransformPool(pos.x, pos.y));
+	tempGO->SetRenderer(AddToRendererPool());
 }
 
 
 
-
+//
 //bool WorldManager::CheckMouseCollision()
 //{
 //	if (CheckCollisionPointRec(GetMousePosition(), (Rectangle) { 0, 0, GetScreenWidth(), GetScreenHeight() })
