@@ -19,6 +19,8 @@ const char COMMENT_SYMBOL = '#';
 const int POOL_SIZE = 100;
 const int MAX_COMPONENTS = 100;
 
+const std::string GARBAGE_FILE = "garbage";
+
 
 class WorldManager
 {
@@ -45,10 +47,9 @@ private:
 
 	// Level Serialization
 	std::unordered_map<int, GameObject*> m_World;
-	bool m_WorldUsed[POOL_SIZE];
 	int GetComponentValuesFromStream(std::string stream);
 	void LoadLevel(std::string fileToOpen);
-	void SaveWorld();
+	void SaveWorld(std::string fileToSave);
 
 	// GameObject Helpers
 	void AddComponent(GameObject* gameobject, ComponentTypes type);

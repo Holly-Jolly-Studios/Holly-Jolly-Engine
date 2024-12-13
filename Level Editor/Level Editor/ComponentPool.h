@@ -49,7 +49,7 @@ public:
 		for (i = 0; i < m_Pool.size(); i++) //loops through the entire pool until it find the gameobject to delete
 		{
 			T* currentCom = &m_Pool[i];
-			if (currentCom = component)
+			if (currentCom == component)
 			{
 				assert(m_InUse[i]); //checks to see if the component exists
 				m_InUse[i] = false;

@@ -1,0 +1,78 @@
+gameobject
+{
+component[0] { x109;  y406; }
+component[1] { w45;  h84;  x45;  y84;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x368;  y159; }
+component[1] { w43;  h69;  x43;  y69;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x235;  y401; }
+component[1] { w32;  h39;  x32;  y39;  r0;  g0;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x409;  y313; }
+component[1] { w47;  h77;  x47;  y77;  r0;  g0;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x181;  y273; }
+component[1] { w62;  h81;  x62;  y81;  r200;  g122;  b255;  a255; }
+}
+
+gameobject
+{
+component[0] { x280;  y177; }
+component[1] { w94;  h72;  x94;  y72;  r0;  g0;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x175;  y115; }
+component[1] { w85;  h71;  x85;  y71;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x59;  y280; }
+component[1] { w69;  h40;  x69;  y40;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x343;  y544; }
+component[1] { w50;  h82;  x50;  y82;  r0;  g0;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x343;  y436; }
+component[1] { w82;  h34;  x82;  y34;  r0;  g0;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x480;  y228; }
+component[1] { w69;  h100;  x69;  y100;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x368;  y289; }
+component[1] { w63;  h51;  x63;  y51;  r253;  g249;  b0;  a255; }
+}
+
+gameobject
+{
+component[0] { x290;  y361; }
+component[1] { w99;  h68;  x99;  y68;  r200;  g122;  b255;  a255; }
+}
+

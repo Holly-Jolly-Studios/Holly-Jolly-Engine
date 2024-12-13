@@ -273,10 +273,6 @@ void GameObject::RemovePlayerController(ComponentPool<PlayerController> pool, st
 	if (m_GOPlayerController != NULL)
 	{
 		pool.Delete(m_GOPlayerController);
-		for (int i = 0; i < vec.size(); i++) {
-			if (vec[i] == m_GOPlayerController)
-				vec.erase(vec.begin() + i);
-		}
 		m_GOPlayerController = NULL;
 		RemoveFromComponentList(playerControllerComponent);
 	}

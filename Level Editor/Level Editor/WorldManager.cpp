@@ -89,6 +89,7 @@ void WorldManager::GameLoop()
 						height = m_SelectedGO->GetRenderer()->GetHeight();
 						Color temp = m_SelectedGO->GetRenderer()->GetColor();
 						goColor = { (float)temp.r/255, (float)temp.g/255, (float)temp.b/255, 255};
+						foo[0] = m_SelectedGO->HasComponent(playerControllerComponent);
 						OpenEditUI();
 					}
 				}
@@ -117,6 +118,7 @@ void WorldManager::GameLoop()
 
 
 		// Save
+		ImGui::TextColored(ImVec4(0, 0, 0, 0), "");
 		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Save Level");
 
 		ImGui::InputText("  ", saveInput, IM_ARRAYSIZE(saveInput));
@@ -138,9 +140,11 @@ void WorldManager::GameLoop()
 		}
 
 
-		// Show other UI
-		if (ImGui::Button("Show UI"))
-			OpenEditUI();
+		// Tips
+		ImGui::TextColored(ImVec4(0, 0, 0, 0), "");
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Space to spawn an object");
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "LClick to select");
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "RClick + drag to move selected");
 
 		ImGui::End();
 
@@ -171,13 +175,13 @@ void WorldManager::GameLoop()
 			m_SelectedGO->GetRenderer()->SetColor(tempCol);
 
 
-			//// Player
-			//ImGui::Checkbox("Player", &foo[0]);
-			//if (foo[0] == true)
-			//	AddComponent(clone, playerControllerComponent);
-			//else
-			//	RemoveComponent(clone, playerControllerComponent);
-			//	
+			// Player
+			ImGui::Checkbox("Player", &foo[0]);
+			if (foo[0] && !m_SelectedGO->HasComponent(playerControllerComponent))
+				AddComponent(m_SelectedGO, playerControllerComponent);
+			//else if (!foo[0] && m_SelectedGO->HasComponent(playerControllerComponent))
+				//RemoveComponent(m_SelectedGO, playerControllerComponent);
+				
 			//// Renderer
 			//ImGui::Checkbox("Renderer", &foo[1]);
 			//if (foo[1] == true)
@@ -594,70 +598,69 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 	fin.close();
 }
 
-
-void WorldManager::SaveWorld()
+void WorldManager::SaveWorld(std::string fileToSave)
 {
 	// If nothing is in scene don't save anything
 	if (m_World.size() == 0)
 		return;
 
 
-	std::ofstream fout(saveFileName + fileExtention);
+	std::ofstream fout(fileToSave + fileExtention);
 
 	if (fout.is_open() && fout.good())
 	{
-		for (int i = 0; i < m_World.size(); i++)
+		for (auto i = m_World.begin(); i != m_World.end(); i++)
 		{
 			fout << "gameobject" << std::endl << "{" << std::endl;
 
-			if (m_World[i]->GetTransform() != nullptr)
+			if (i->second->GetTransform() != nullptr)
 			{
 				fout << "component[0] {";
 
-				fout << " x" << m_World[i]->GetTransform()->GetX() << "; ";
-				fout << " y" << m_World[i]->GetTransform()->GetY() << "; }" << std::endl;
+				fout << " x" << i->second->GetTransform()->GetX() << "; ";
+				fout << " y" << i->second->GetTransform()->GetY() << "; }" << std::endl;
 			}
 
-			if (m_World[i]->GetRenderer() != nullptr)
+			if (i->second->GetRenderer() != nullptr)
 			{
 				bool newColor = false;
 
-				if (m_World[i]->GetCollisionColorChanger() && m_World[i]->GetCollider()->GetIsColliding())
+				if (i->second->GetCollisionColorChanger() && i->second->GetCollider()->GetIsColliding())
 				{
-					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetDefaultColor());
+					i->second->GetRenderer()->SetColor(i->second->GetCollisionColorChanger()->GetDefaultColor());
 					newColor = true;
 				}
 
-				Color color = m_World[i]->GetRenderer()->GetColor();
+				Color color = i->second->GetRenderer()->GetColor();
 
 				if (newColor)
-					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetNewColor());
+					i->second->GetRenderer()->SetColor(i->second->GetCollisionColorChanger()->GetNewColor());
 
 				fout << "component[1] {";
 
-				fout << " w" << m_World[i]->GetRenderer()->GetWidth() << "; ";
-				fout << " h" << m_World[i]->GetRenderer()->GetHeight() << "; ";
-				fout << " x" << m_World[i]->GetRenderer()->GetTopX() << "; ";
-				fout << " y" << m_World[i]->GetRenderer()->GetTopY() << "; ";
+				fout << " w" << i->second->GetRenderer()->GetWidth() << "; ";
+				fout << " h" << i->second->GetRenderer()->GetHeight() << "; ";
+				fout << " x" << i->second->GetRenderer()->GetTopX() << "; ";
+				fout << " y" << i->second->GetRenderer()->GetTopY() << "; ";
 				fout << " r" << int(color.r) << "; ";
 				fout << " g" << int(color.g) << "; ";
 				fout << " b" << int(color.b) << "; ";
 				fout << " a" << int(color.a) << "; }" << std::endl;
 			}
 
-			if (m_World[i]->GetCollider() != nullptr)
+			if (i->second->GetCollider() != nullptr)
 			{
 				fout << "component[2] {}" << std::endl;
 			}
 
-			if (m_World[i]->GetPlayerController() != nullptr)
+			if (i->second->GetPlayerController() != nullptr)
 			{
 				fout << "component[3] {}" << std::endl;
 			}
 
-			if (m_World[i]->GetCollisionColorChanger() != nullptr)
+			if (i->second->GetCollisionColorChanger() != nullptr)
 			{
-				Color color = m_World[i]->GetCollisionColorChanger()->GetNewColor();
+				Color color = i->second->GetCollisionColorChanger()->GetNewColor();
 
 				fout << "component[4] { ";
 
@@ -672,7 +675,6 @@ void WorldManager::SaveWorld()
 		fout.close();
 	}
 }
-
 
 // GameObject Helpers
 void WorldManager::AddComponent(GameObject* gameobject, ComponentTypes type)
@@ -698,6 +700,7 @@ void WorldManager::AddComponent(GameObject* gameobject, ComponentTypes type)
 		gameobject->SetPlayerController(AddToPlayerControllerPool());
 		gameobject->GetPlayerController()->SetGameObjectID(gameobject->GetObjectID());
 		break;
+
 	case rectangleColliderComponent:
 		gameobject->SetCollider(AddToColliderPool());
 		gameobject->GetCollider()->SetGameObjectID(gameobject->GetObjectID());
@@ -742,8 +745,8 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case playerControllerComponent:
 		if (gameobject->HasComponent(type))
 		{
+			//RemoveFromPlayerControllerPool(gameobject);
 			gameobject->RemovePlayerController(m_PlayerControllerPool, m_PlayerControllerList);
-			RemoveFromPlayerControllerPool(gameobject);
 		}
 		break;
 
@@ -796,8 +799,6 @@ void WorldManager::SpawnPlayer(NewTransform* transform)
 
 void WorldManager::DeleteSelected() 
 {
-	m_WorldUsed[m_SelectedGO->GetObjectID()] = false;
-
 	int key;
 	for (auto i = m_World.begin(); i != m_World.end(); i++) {
 		if (i->second == m_SelectedGO)
@@ -862,6 +863,9 @@ void WorldManager::DeleteSelected()
 	}
 
 	m_World.erase(key);
+
+	//SaveWorld(GARBAGE_FILE);
+	//LoadLevel(GARBAGE_FILE);
 }
 
 void WorldManager::ClearWorld()
@@ -899,22 +903,11 @@ void WorldManager::ClearWorld()
 // Object ID
 int WorldManager::GetNewObjectID()
 {
-	for (int i = 0; i < POOL_SIZE; i++) {
-		if (!m_WorldUsed[i]) {
-			m_WorldUsed[i] = true;
-			return i;
-		}
-	}
-
-	assert(false);
+	return m_ObjectIDIndex++;
 }
 
 void WorldManager::ClearObjectIDs()
 {
-	for (int i = 0; i < POOL_SIZE; i++) {
-		m_WorldUsed[i] = false;
-	}
-
 	m_ObjectIDIndex = 0;
 }
 
@@ -1015,7 +1008,7 @@ void WorldManager::RemoveFromRendererPool(GameObject* gameobject)
 // Debug
 void WorldManager::SaveButton()
 {
-	SaveWorld();
+	SaveWorld(saveFileName);
 }
 
 void WorldManager::DeleteAllGOOfType(ComponentTypes type)
