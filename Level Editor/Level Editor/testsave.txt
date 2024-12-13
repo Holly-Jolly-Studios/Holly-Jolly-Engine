@@ -1,0 +1,36 @@
+gameobject
+{
+component(0) { x119;  y118; }
+component(1) { w74;  h92;  x74;  y92;  r0;  g121;  b241;  a255; }
+}
+
+gameobject
+{
+component(0) { x257;  y75; }
+component(1) { w97;  h69;  x97;  y69;  r200;  g122;  b255;  a255; }
+}
+
+gameobject
+{
+component(0) { x421;  y261; }
+component(1) { w72;  h53;  x72;  y53;  r255;  g109;  b194;  a255; }
+}
+
+gameobject
+{
+component(0) { x244;  y330; }
+component(1) { w80;  h40;  x80;  y40;  r200;  g122;  b255;  a255; }
+}
+
+gameobject
+{
+component(0) { x89;  y460; }
+component(1) { w63;  h44;  x63;  y44;  r255;  g109;  b194;  a255; }
+}
+
+gameobject
+{
+component(0) { x200;  y276; }
+component(1) { w33;  h31;  x33;  y31;  r253;  g249;  b0;  a255; }
+}
+

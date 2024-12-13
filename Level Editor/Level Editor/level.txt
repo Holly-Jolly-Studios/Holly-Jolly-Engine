@@ -1,287 +1,46 @@
 gameobject
 {
-	component(0)
-	{
-	x0;
-	y0;
-	}
-	component(1)
-	{
-	w40;
-	h40;
-	x400;
-	y800;
-	r255;
-	g0;
-	b255;
-	a255;
-	}
-	component(2)
-	component(3)
-	component(4)
-	{
-	r0
-	g0
-	b0
-	a255
-	}
-}
-gameobject
-{
-	component(0)
-	{
-	x200;
-	y100;
-	}
-	component(1)
-	{
-	w40;
-	h40;
-	x400;
-	y800;
-	r255;
-	g0;
-	b255;
-	a255;
-	}
-	component(2)
-}
-gameobject
-{
-	component(0)
-	{
-	x200;
-	y100;
-	}
-	component(1)
-	{
-	w40;
-	h40;
-	x400;
-	y800;
-	r255;
-	g0;
-	b255;
-	a255;
-	}
-	component(2)
-}
-gameobject
-{
-	component(0)
-	{
-	x400;
-	y200;
-	}
-	component(1)
-	{
-	w60;
-	h60;
-	x800;
-	y400;
-	r0;
-	g255;
-	b156;
-	a255;
-	}
-	component(2)
-	component(4)
-	{
-	r0
-	g0
-	b0
-	a255
-	}
+component[0] { x310;  y258; }
+component[1] { w40;  h40;  x400;  y800;  r255;  g0;  b255;  a255; }
+component[2] {}
+component[3] {}
+component[4] {  r0;  g0;  b0;  a0; }
 }
 
 gameobject
 {
-	component(0)
-	{
-	x20;
-	y20;
-	}
-	component(1)
-	{
-	w20;
-	h20;
-	x20;
-	y20;
-	r0;
-	g255;
-	b156;
-	a255;
-	}
-	component(2)
+component[0] { x200;  y100; }
+component[1] { w40;  h40;  x400;  y800;  r255;  g0;  b255;  a255; }
+component[2] {}
 }
 
 gameobject
 {
-	component(0)
-	{
-	x50;
-	y60;
-	}
-	component(1)
-	{
-	w30;
-	h30;
-	x50;
-	y60;
-	r0;
-	g255;
-	b156;
-	a255;
-	}
-	component(2)
+component[0] { x445;  y110; }
+component[1] { w48;  h42;  x48;  y42;  r255;  g109;  b194;  a255; }
 }
 
 gameobject
 {
-	component(0)
-	{
-	x100;
-	y60;
-	}
-	component(1)
-	{
-	w100;
-	h30;
-	x50;
-	y60;
-	r0;
-	g1;
-	b156;
-	a255;
-	}
-	component(2)
+component[0] { x140;  y245; }
+component[1] { w33;  h43;  x33;  y43;  r230;  g41;  b55;  a255; }
 }
 
 gameobject
 {
-	component(0)
-	{
-	x60;
-	y100;
-	}
-	component(1)
-	{
-	w30;
-	h100;
-	x50;
-	y60;
-	r100;
-	g256;
-	b0;
-	a255;
-	}
-	component(2)
+component[0] { x514;  y279; }
+component[1] { w50;  h72;  x50;  y72;  r255;  g109;  b194;  a255; }
 }
 
 gameobject
 {
-	component(0)
-	{
-	x200;
-	y460;
-	}
-	component(1)
-	{
-	w75;
-	h40;
-	x50;
-	y60;
-	r100;
-	g256;
-	b0;
-	a255;
-	}
-	component(2)
+component[0] { x406;  y457; }
+component[1] { w72;  h68;  x72;  y68;  r253;  g249;  b0;  a255; }
 }
 
 gameobject
 {
-	component(0)
-	{
-	x60;
-	y100;
-	}
-	component(1)
-	{
-	w30;
-	h100;
-	x50;
-	y60;
-	r100;
-	g256;
-	b0;
-	a255;
-	}
-	component(2)
+component[0] { x233;  y483; }
+component[1] { w96;  h62;  x96;  y62;  r253;  g249;  b0;  a255; }
 }
-
-gameobject
-{
-	component(0)
-	{
-	x400;
-	y300;
-	}
-	component(1)
-	{
-	w100;
-	h200;
-	x50;
-	y60;
-	r0;
-	g60;
-	b100;
-	a255;
-	}
-	component(2)
-}
-
-gameobject
-{
-	component(0)
-	{
-	x500;
-	y100;
-	}
-	component(1)
-	{
-	w50;
-	h300;
-	x50;
-	y60;
-	r200;
-	g100;
-	b150;
-	a255;
-	}
-	component(2)
-}
-
-gameobject
-{
-	component(0)
-	{
-	x100;
-	y400;
-	}
-	component(1)
-	{
-	w50;
-	h300;
-	x50;
-	y60;
-	r200;
-	g100;
-	b150;
-	a255;
-	}
-	component(2)
-}
-
-# ignored #
 

@@ -210,7 +210,6 @@ void WorldManager::GameLoop()
 		Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
 		ClearBackground(col);
 
-		// Frame allocators
 		StackAllocator frameAllocator;
 		m_Frames = frameAllocator.Alloc<int>();
 
@@ -378,18 +377,11 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 {
 	ClearWorld();
 
-	std::fstream file;
-	file.open(fileToOpen);
+	std::fstream fin;
+	fin.open(fileToOpen + fileExtention);
 
-	if (file.fail())
+	if (fin.is_open() && fin.good())
 	{
-		printf("", levelPath, fileExtention, " does not exist!\n");
-	}
-
-	if (file.is_open() && file.good())
-	{
-		printf("Loading level: %i", levelPath, "\n");
-
 		char input = ' ';
 		std::string currentInput;
 		std::string previousInput;
@@ -406,12 +398,12 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 		4 - color collider (rgba)
 		*/
 
-		while (!file.eof())
+		while (!fin.eof())
 		{
-			file >> input;
+			fin >> input;
 			if (input == COMMENT_SYMBOL)
 			{
-				file.ignore(MAX_COMMENT_LENGTH, COMMENT_SYMBOL);
+				fin.ignore(MAX_COMMENT_LENGTH, COMMENT_SYMBOL);
 			}
 			else if (isEditingComponent && currentInput.size() >= 2 && input == ';')
 			{
@@ -481,11 +473,11 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 					break;
 
 				case 2:
-					// RectangleCollider has no values
+					// RectangleCollider
 					break;
 
 				case 3:
-					// PlayerController has no values
+					// PlayerController
 					break;
 
 				case 4:
@@ -525,7 +517,7 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 			}
 			else
 			{
-				if (input == '(' || input == ')' || input == '{' || input == '}')
+				if (input == '[' || input == ']' || input == '{' || input == '}')
 				{
 					if (input == '}')
 					{
@@ -536,7 +528,6 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 					{
 						tempGameObject = NewGameObject();
 						previousInput = currentInput;
-
 					}
 					else if (currentInput == "component" && !isEditingComponent)
 					{
@@ -544,33 +535,31 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 					}
 					else
 					{
-						//NOTE: Using a switch for now to get it working:
-
 						if (previousInput == "component")
 						{
-							int componentIndex = std::atoi(currentInput.c_str());
+							int componentNum = std::atoi(currentInput.c_str());
 
-							currentComponent = componentIndex;
+							currentComponent = componentNum;
 
 							if (tempGameObject != nullptr)
 							{
-								if (componentIndex == 0)
+								if (componentNum == 0)
 								{
 									AddComponent(tempGameObject, transformComponent);
 								}
-								else if (componentIndex == 1)
+								else if (componentNum == 1)
 								{
 									AddComponent(tempGameObject, rectangleRendererComponent);
 								}
-								else if (componentIndex == 2)
+								else if (componentNum == 2)
 								{
 									AddComponent(tempGameObject, rectangleColliderComponent);
 								}
-								else if (componentIndex == 3)
+								else if (componentNum == 3)
 								{
 									AddComponent(tempGameObject, playerControllerComponent);
 								}
-								else if (componentIndex == 4)
+								else if (componentNum == 4)
 								{
 									AddComponent(tempGameObject, collisionColorChangerComponent);
 									tempGameObject->GetCollisionColorChanger()->SetDefaultColor(tempGameObject->GetRenderer()->GetColor());
@@ -581,7 +570,6 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 						}
 						else
 						{
-							// Do nothing 
 						}
 
 						previousInput = currentInput;
@@ -595,8 +583,7 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 			}
 		}
 	}
-
-	file.close();
+	fin.close();
 }
 
 
@@ -607,20 +594,20 @@ void WorldManager::SaveWorld()
 		return;
 
 
-	std::ofstream fin(saveFileName + fileExtention);
+	std::ofstream fout(saveFileName + fileExtention);
 
-	if (fin.is_open() && fin.good())
+	if (fout.is_open() && fout.good())
 	{
 		for (int i = 0; i < m_World.size(); i++)
 		{
-			fin << "gameobject" << std::endl << "{" << std::endl;
+			fout << "gameobject" << std::endl << "{" << std::endl;
 
 			if (m_World[i]->GetTransform() != nullptr)
 			{
-				fin << "component(0) {";
+				fout << "component[0] {";
 
-				fin << " x" << m_World[i]->GetTransform()->GetX() << "; ";
-				fin << " y" << m_World[i]->GetTransform()->GetY() << "; }" << std::endl;
+				fout << " x" << m_World[i]->GetTransform()->GetX() << "; ";
+				fout << " y" << m_World[i]->GetTransform()->GetY() << "; }" << std::endl;
 			}
 
 			if (m_World[i]->GetRenderer() != nullptr)
@@ -638,44 +625,43 @@ void WorldManager::SaveWorld()
 				if (newColor)
 					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetNewColor());
 
-				fin << "component(1) {";
+				fout << "component[1] {";
 
-				fin << " w" << m_World[i]->GetRenderer()->GetWidth() << "; ";
-				fin << " h" << m_World[i]->GetRenderer()->GetHeight() << "; ";
-				fin << " x" << m_World[i]->GetRenderer()->GetTopX() << "; ";
-				fin << " y" << m_World[i]->GetRenderer()->GetTopY() << "; ";
-				fin << " r" << int(color.r) << "; ";
-				fin << " g" << int(color.g) << "; ";
-				fin << " b" << int(color.b) << "; ";
-				fin << " a" << int(color.a) << "; }" << std::endl;
+				fout << " w" << m_World[i]->GetRenderer()->GetWidth() << "; ";
+				fout << " h" << m_World[i]->GetRenderer()->GetHeight() << "; ";
+				fout << " x" << m_World[i]->GetRenderer()->GetTopX() << "; ";
+				fout << " y" << m_World[i]->GetRenderer()->GetTopY() << "; ";
+				fout << " r" << int(color.r) << "; ";
+				fout << " g" << int(color.g) << "; ";
+				fout << " b" << int(color.b) << "; ";
+				fout << " a" << int(color.a) << "; }" << std::endl;
 			}
 
 			if (m_World[i]->GetCollider() != nullptr)
 			{
-				fin << "component(2) {}" << std::endl;
+				fout << "component[2] {}" << std::endl;
 			}
 
 			if (m_World[i]->GetPlayerController() != nullptr)
 			{
-				fin << "component(3) {}" << std::endl;
-
+				fout << "component[3] {}" << std::endl;
 			}
 
 			if (m_World[i]->GetCollisionColorChanger() != nullptr)
 			{
 				Color color = m_World[i]->GetCollisionColorChanger()->GetNewColor();
 
-				fin << "component(4) { " << std::endl;
+				fout << "component[4] { ";
 
-				fin << " r" << int(color.r) << "; ";
-				fin << " g" << int(color.g) << "; ";
-				fin << " b" << int(color.b) << "; ";
-				fin << " a" << int(color.a) << "; }" << std::endl;
+				fout << " r" << int(color.r) << "; ";
+				fout << " g" << int(color.g) << "; ";
+				fout << " b" << int(color.b) << "; ";
+				fout << " a" << int(color.a) << "; }" << std::endl;
 			}
 
-			fin << "}" << std::endl << std::endl;
+			fout << "}" << std::endl << std::endl;
 		}
-		fin.close();
+		fout.close();
 	}
 }
 
