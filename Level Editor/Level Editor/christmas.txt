@@ -1,19 +1,19 @@
 gameobject
 {
-component(0) { x262;  y183; }
-component(1) { w62;  h89;  x62;  y89;  r12;  g107;  b23;  a255; }
+component[0] { x262;  y183; }
+component[1] { w62;  h89;  x62;  y89;  r12;  g107;  b23;  a255; }
 }
 
 gameobject
 {
-component(0) { x242;  y229; }
-component(1) { w103;  h94;  x87;  y94;  r13;  g108;  b24;  a255; }
+component[0] { x242;  y229; }
+component[1] { w103;  h94;  x87;  y94;  r13;  g108;  b24;  a255; }
 }
 
 gameobject
 {
-component(0) { x220;  y292; }
-component(1) { w149;  h80;  x35;  y41;  r13;  g108;  b24;  a255; }
+component[0] { x220;  y292; }
+component[1] { w149;  h80;  x35;  y41;  r13;  g108;  b24;  a255; }
 }
 
 gameobject
