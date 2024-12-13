@@ -33,7 +33,7 @@ public:
 	void SetObjectID(int NewObjectID);
 
 	// Add components
-	bool ContainsComponentInList(ComponentTypes type);
+	bool HasComponent(ComponentTypes type);
 	void SetTransform(NewTransform* NewTransform);
 	void SetPlayerController(PlayerController* NewController);
 	void SetCollider(RectangleCollider* NewCollider);
@@ -69,4 +69,10 @@ protected:
 	RectangleRenderer* m_GORenderer;
 	RectangleCollider* m_GOCollider;
 	CollisionColorChanger* m_GOColorChanger;
+
+	bool m_HasTransformComponent;
+	bool m_HasPlayerControllerComponent;
+	bool m_HasColliderComponent;
+	bool m_HasRendererComponent;
+	bool m_HasColorChangerComponent;
 };

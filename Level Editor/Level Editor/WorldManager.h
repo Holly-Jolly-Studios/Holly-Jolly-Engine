@@ -50,6 +50,7 @@ private:
 
 	// GameObject Helpers
 	void AddComponent(GameObject* gameobject, ComponentTypes type);
+	void RemoveComponent(GameObject* gameobject, ComponentTypes type);
 	GameObject* NewGameObject();
 	void SpawnPlayer(NewTransform* transform);
 	void ClearWorld();
@@ -72,9 +73,18 @@ private:
 	RectangleRenderer* AddToRendererPool(float width, float height, float leftX, float leftY, Color color);
 	RectangleRenderer* AddToRendererPool(Vector2 size, Vector2 left, Color color);
 
+	void RemoveFromTransformPool(GameObject* gameobject);
+	void RemoveFromCollisionColorChangerPool(GameObject* gameobject);
+	void RemoveFromPlayerControllerPool(GameObject* gameobject);
+	void RemoveFromColliderPool(GameObject* gameobject);
+	void RemoveFromRendererPool(GameObject* gameobject);
+
 	// Debug 
 	void SaveButton();
-	void DeleteAllGO();
+	void DeleteAllGOOfType(ComponentTypes type);
+	void SpawnGameObjectOnMouse();
+	bool CheckMouseCollision();
+	void ToggleUI();
 
 	#pragma endregion
 
@@ -111,6 +121,7 @@ private:
 
 	// Debug
 	int* m_Frames;
+	bool m_ShowGameObjectEditor;
 
 	#pragma endregion
 };

@@ -7,6 +7,12 @@ GameObject::GameObject()
 	m_GOPlayerController = NULL;
 	m_GOColorChanger = NULL;
 	m_GOTransform = NULL;
+
+	bool m_HasTransformComponent = false;
+	bool m_HasPlayerControllerComponent = false;
+	bool m_HasRendererComponent = false;
+	bool m_HasColliderComponent = false;
+	bool m_HasColorChangerComponent = false;
 }
 
 GameObject::~GameObject()
@@ -104,15 +110,47 @@ void GameObject::SetObjectID(int NewObjectID)
 
 #pragma region Add Components
 
-bool GameObject::ContainsComponentInList(ComponentTypes type)
+bool GameObject::HasComponent(ComponentTypes type)
 {
-	if (std::find(m_ComponentTypes.begin(), m_ComponentTypes.end(), type) != m_ComponentTypes.end()) 
+	switch (type)
 	{
-		return true;
-	}
-	else 
-	{
-		return false;
+		case transformComponent:
+			if (m_HasTransformComponent)
+			{
+				return true;
+			}
+			break;
+
+		case playerControllerComponent:
+			if (m_HasPlayerControllerComponent)
+			{
+				return true;
+			}
+			break;
+
+		case rectangleColliderComponent:
+			if (m_HasColliderComponent)
+			{
+				return true;
+			}
+			break;
+
+		case rectangleRendererComponent:
+			if (m_HasRendererComponent)
+			{
+				return true;
+			}
+			break;
+
+		case collisionColorChangerComponent:
+			if (m_HasColorChangerComponent)
+			{
+				return true;
+			}
+			break;
+
+		default:
+			return false;
 	}
 }
 
@@ -120,9 +158,10 @@ void GameObject::SetTransform(NewTransform* NewTransform)
 {
 	this->m_GOTransform = NewTransform;
 
-	if (!ContainsComponentInList(transformComponent))
+	if (!HasComponent(transformComponent))
 	{
 		m_ComponentTypes.push_back(transformComponent);
+		m_HasTransformComponent = true;
 	}
 }
 
@@ -130,9 +169,10 @@ void GameObject::SetPlayerController(PlayerController* NewController)
 {
 	this->m_GOPlayerController = NewController;
 
-	if (!ContainsComponentInList(playerControllerComponent))
+	if (!HasComponent(playerControllerComponent))
 	{
 		m_ComponentTypes.push_back(playerControllerComponent);
+		m_HasPlayerControllerComponent = true;
 	}
 }
 
@@ -140,9 +180,10 @@ void GameObject::SetCollider(RectangleCollider* NewCollider)
 {
 	this->m_GOCollider = NewCollider;
 
-	if (!ContainsComponentInList(rectangleColliderComponent))
+	if (!HasComponent(rectangleColliderComponent))
 	{
 		m_ComponentTypes.push_back(rectangleColliderComponent);
+		m_HasColliderComponent = false;
 	}
 }
 
@@ -150,9 +191,10 @@ void GameObject::SetRenderer(RectangleRenderer* NewRenderer)
 {
 	this->m_GORenderer = NewRenderer;
 
-	if (!ContainsComponentInList(rectangleRendererComponent))
+	if (!HasComponent(rectangleRendererComponent))
 	{
 		m_ComponentTypes.push_back(rectangleRendererComponent);
+		m_HasRendererComponent = true;
 	}
 }
 
@@ -160,9 +202,10 @@ void GameObject::SetColorChanger(CollisionColorChanger* NewColor)
 {
 	this->m_GOColorChanger = NewColor;
 
-	if (!ContainsComponentInList(collisionColorChangerComponent))
+	if (!HasComponent(collisionColorChangerComponent))
 	{
 		m_ComponentTypes.push_back(collisionColorChangerComponent);
+		m_HasColorChangerComponent = true;
 	}
 }
 
@@ -172,9 +215,43 @@ void GameObject::SetColorChanger(CollisionColorChanger* NewColor)
 
 void GameObject::RemoveFromComponentList(ComponentTypes type)
 {
-	// may cause errors, try to loop through instead?
-	if (ContainsComponentInList(type))
-		m_ComponentTypes.erase(std::remove(m_ComponentTypes.begin(), m_ComponentTypes.end(), type), m_ComponentTypes.end());
+	switch (type)
+	{
+		case transformComponent:
+			if (m_HasTransformComponent)
+			{
+				m_HasTransformComponent = false;
+			}
+			break;
+		
+		case playerControllerComponent:
+			if (m_HasPlayerControllerComponent)
+			{
+				m_HasPlayerControllerComponent = false;
+			}
+			break;
+
+		case rectangleColliderComponent:
+			if (m_HasColliderComponent)
+			{
+				m_HasColliderComponent = false;
+			}
+			break;
+
+		case rectangleRendererComponent:
+			if (m_HasRendererComponent)
+			{
+				m_HasRendererComponent = false;
+			}
+			break;
+
+		case collisionColorChangerComponent:
+			if (m_HasColorChangerComponent)
+			{
+				m_HasColorChangerComponent = false;
+			}
+			break;
+	}
 }
 
 void GameObject::RemoveTransform()

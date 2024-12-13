@@ -29,6 +29,12 @@ WorldManager* WorldManager::GetInstance()
 
 char input[20];
 static ImVec4 myColor = { 1, 1, 1, 255 };
+static ImVec4 goColor = { 1, 1, 1, 255 };
+int x = 0;
+int y = 0;
+
+bool foo[4] = { false, false, false, false };
+
 
 // Loop
 void WorldManager::GameLoop()
@@ -67,6 +73,16 @@ void WorldManager::GameLoop()
 		// Clear world button
 		if (ImGui::Button("Clear World"))
 			ClearWorld();
+		
+		// Spawn GameObject
+		if (ImGui::Button("Spawn GameObject"))
+			SpawnGameObjectOnMouse();
+		
+		// Remove All Transforms
+		/*if (ImGui::Button("Kill Transforms"))
+			DeleteAllGOOfType(transformComponent);*/
+
+		
 
 
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Input File Name To Load");
@@ -80,7 +96,78 @@ void WorldManager::GameLoop()
 
 		}
 
+
+		// Show other UI
+		if (ImGui::Button("Show UI"))
+			ToggleUI();
+
 		ImGui::End();
+
+
+
+		if (m_ShowGameObjectEditor)
+		{
+			// TODO: Edit specific gameobject
+			GameObject* clone;
+			Color temp;
+
+			ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+			// Spawn GameObject
+			if (ImGui::Button("Spawn GameObject"))
+				SpawnGameObjectOnMouse();
+
+			// Pick background color
+			ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
+			ImGui::SameLine();
+			ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+			ImGui::InputInt("Transform X", &x);
+			ImGui::InputInt("Transform Y", &y);
+
+			NewTransform* tempPos = new NewTransform(x, y);
+			clone->SetTransform(tempPos);
+
+
+			// Player
+			ImGui::Checkbox("Player", &foo[0]);
+			if (foo[0] == true)
+				AddComponent(clone, playerControllerComponent);
+			else
+				RemoveComponent(clone, playerControllerComponent);
+				
+			// Renderer
+			ImGui::Checkbox("Renderer", &foo[1]);
+			if (foo[1] == true)
+				AddComponent(clone, rectangleRendererComponent);
+			else
+				RemoveComponent(clone, rectangleRendererComponent);
+
+			// Collider
+			ImGui::Checkbox("Collider", &foo[2]);
+			if (foo[2] == true)
+				AddComponent(clone, rectangleColliderComponent);
+			else
+				RemoveComponent(clone, rectangleColliderComponent);
+
+			// Color Changer
+			ImGui::Checkbox("Color Changer", &foo[3]);
+			if (foo[3] == true)
+				AddComponent(clone, collisionColorChangerComponent);
+			else
+				RemoveComponent(clone, collisionColorChangerComponent);
+
+			// Delete GameObject
+			if (ImGui::Button("Delete this object"))
+				ToggleUI();
+
+
+			ImGui::End();
+		}
+
+
+
+
 
 		// Change BG Color
 		Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
@@ -138,6 +225,9 @@ WorldManager::WorldManager()
 	m_PlayerControllerPool.SetSize(MAX_COMPONENTS);
 	m_ColliderPool.SetSize(MAX_COMPONENTS);
 	m_RendererPool.SetSize(MAX_COMPONENTS);
+
+	// Debug
+	m_ShowGameObjectEditor = false;
 
 	LoadLevel();
 }
@@ -251,13 +341,20 @@ int WorldManager::GetComponentValuesFromStream(std::string stream)
 
 void WorldManager::LoadLevel()
 {
-	//printf("Loading level: %i", levelPath, "\n");
+	ClearWorld();
 
 	std::fstream file;
 	file.open(levelPath);
 
+	if (file.fail())
+	{
+		printf("", levelPath, " does not exist!\n");
+	}
+
 	if (file.is_open() && file.good())
 	{
+		printf("Loading level: %i", levelPath, "\n");
+
 		char input = ' ';
 		std::string currentInput;
 		std::string previousInput;
@@ -658,6 +755,62 @@ void WorldManager::AddComponent(GameObject* gameobject, ComponentTypes type)
 	}
 }
 
+void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
+{
+	if (gameobject == NULL)
+	{
+		return;
+	}
+
+	switch (type)
+	{
+	case collisionColorChangerComponent:
+		if (gameobject->HasComponent(type))
+		{
+			gameobject->RemoveColorChanger();
+			RemoveFromCollisionColorChangerPool(gameobject);
+		}
+		break;
+
+	case transformComponent:
+		if (gameobject->HasComponent(type))
+		{
+			gameobject->RemoveTransform();
+			RemoveFromTransformPool(gameobject);
+		}
+		break;
+
+	case playerControllerComponent:
+		if (gameobject->HasComponent(type))
+		{
+			gameobject->RemovePlayerController();
+			RemoveFromPlayerControllerPool(gameobject);
+		}
+		break;
+
+	case rectangleColliderComponent:
+		if (gameobject->HasComponent(type))
+		{
+			gameobject->RemoveCollider();
+			RemoveFromColliderPool(gameobject);
+		}
+		break;
+
+	case rectangleRendererComponent:
+		if (gameobject->HasComponent(type))
+		{
+			gameobject->RemoveRenderer();
+			RemoveFromRendererPool(gameobject);
+		}
+		break;
+
+	default:
+		printf("no component found you are doing to die in 5 seconds");
+		break;
+	}
+}
+
+
 GameObject* WorldManager::NewGameObject()
 {
 	// Create new gameobject, give it an id, put in map, return
@@ -707,7 +860,6 @@ void WorldManager::ClearWorld()
 
 	m_World.clear();
 	printf("done clearing\n");
-
 }
 
 
@@ -785,6 +937,34 @@ RectangleRenderer* WorldManager::AddToRendererPool(Vector2 size, Vector2 left, C
 } 
 
 
+void WorldManager::RemoveFromTransformPool(GameObject* gameobject)
+{
+	m_TransformComponentPool.Delete(gameobject->GetTransform());
+}
+
+void WorldManager::RemoveFromCollisionColorChangerPool(GameObject* gameobject)
+{
+	m_ColliderColorChangerPool.Delete(gameobject->GetCollisionColorChanger());
+}
+
+void WorldManager::RemoveFromPlayerControllerPool(GameObject* gameobject)
+{
+	m_PlayerControllerPool.Delete(gameobject->GetPlayerController());
+}
+
+void WorldManager::RemoveFromColliderPool(GameObject* gameobject)
+{
+	m_ColliderPool.Delete(gameobject->GetCollider());
+}
+
+void WorldManager::RemoveFromRendererPool(GameObject* gameobject)
+{
+	m_RendererPool.Delete(gameobject->GetRenderer());
+	//m_RendererList.erase(gameobject->GetRenderer());
+}
+
+
+
 // Debug
 void WorldManager::SaveButton()
 {
@@ -792,9 +972,48 @@ void WorldManager::SaveButton()
 	printf("testing 123 \n");
 }
 
-void WorldManager::DeleteAllGO()
+void WorldManager::DeleteAllGOOfType(ComponentTypes type)
 {
+	//m_TransformComponentList.clear();
+	//m_TransformComponentPool.ClearPool();
+
+	//for (auto it = m_World.begin(); it != m_World.end(); )
+	//{
+	//	if (it->second->ContainsComponentInList(type))
+	//	{
+	//		it = m_World.erase(it); // erase returns an iterator to the next element
+	//	}
+	//	else
+	//	{
+	//		++it; // only increment if no element is erased
+	//	}
+	//}
 
 }
+
+void WorldManager::SpawnGameObjectOnMouse()
+{
+	/*Vector2 pos = GetMousePosition();
+	GameObject* temp = NewGameObject();
+	temp->
+	temp->SetTransform(new NewTransform{ pos.x, pos.y });*/
+}
+
+
+
+
+//bool WorldManager::CheckMouseCollision()
+//{
+//	if (CheckCollisionPointRec(GetMousePosition(), (Rectangle) { 0, 0, GetScreenWidth(), GetScreenHeight() })
+//	{
+//		// Mouse inside the screen bounds
+//	}
+//}
+
+void WorldManager::ToggleUI()
+{
+	m_ShowGameObjectEditor = !m_ShowGameObjectEditor;
+}
+
 
 
