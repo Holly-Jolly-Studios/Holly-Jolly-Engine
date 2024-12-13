@@ -843,9 +843,6 @@ void WorldManager::DeleteSelected()
 	}
 
 	m_World.erase(key);
-
-	//SaveWorld(GARBAGE_FILE);
-	//LoadLevel(GARBAGE_FILE);
 }
 
 void WorldManager::ClearWorld()

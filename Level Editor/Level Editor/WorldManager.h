@@ -19,8 +19,6 @@ const char COMMENT_SYMBOL = '#';
 const int POOL_SIZE = 100;
 const int MAX_COMPONENTS = 100;
 
-const std::string GARBAGE_FILE = "garbage";
-
 
 class WorldManager
 {

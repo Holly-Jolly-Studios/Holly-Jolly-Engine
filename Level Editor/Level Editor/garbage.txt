@@ -1,8 +1,0 @@
-gameobject
-{
-component[0] { x394;  y181; }
-component[1] { w46;  h41;  x46;  y41;  r200;  g122;  b255;  a255; }
-}
-
-gameobject
-{
