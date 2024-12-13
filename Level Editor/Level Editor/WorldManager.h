@@ -84,7 +84,7 @@ private:
 	void SaveButton();
 	void DeleteAllGOOfType(ComponentTypes type);
 	void SpawnGameObjectOnMouse();
-	bool CheckMouseCollision();
+	bool CheckMouseCollision(Rectangle rect);
 	void ToggleUI();
 	void OpenEditUI();
 	void CloseEditUI();

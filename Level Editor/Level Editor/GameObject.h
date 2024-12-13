@@ -75,4 +75,6 @@ protected:
 	bool m_HasColliderComponent;
 	bool m_HasRendererComponent;
 	bool m_HasColorChangerComponent;
+
+	bool m_IsSelected = false;
 };

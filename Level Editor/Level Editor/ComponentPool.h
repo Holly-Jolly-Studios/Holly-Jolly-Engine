@@ -38,6 +38,11 @@ public:
 		m_InUse.resize(size);
 	}
 
+	int GetSize()
+	{
+		return m_Pool.size;
+	}
+
 	void Delete(T* component)
 	{
 		int i;

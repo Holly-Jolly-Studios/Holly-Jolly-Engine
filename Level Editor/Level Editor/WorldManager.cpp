@@ -63,6 +63,22 @@ void WorldManager::GameLoop()
 			SpawnGameObjectOnMouse();
 		}
 
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		{
+			for (int i = 0; i < m_World.size(); i++) {
+				GameObject* go = m_World[i];
+				Rectangle rect;
+				rect.x = go->GetTransform()->GetX();
+				rect.y = go->GetTransform()->GetY();
+				rect.width = go->GetRenderer()->GetWidth();
+				rect.height = go->GetRenderer()->GetHeight();
+
+				if (CheckMouseCollision(rect)) {
+					std::cout << "clicked on " << i << std::endl;
+				}
+			}
+		}
+
 		// render imgui content
 		ImGui::Begin("Editor", NULL);
 
@@ -106,65 +122,65 @@ void WorldManager::GameLoop()
 
 
 
-		if (m_ShowGameObjectEditor)
-		{
-			// TODO: Edit specific gameobject
-			GameObject* clone = new GameObject();
-			Color temp;
+		//if (m_ShowGameObjectEditor)
+		//{
+		//	// TODO: Edit specific gameobject
+		//	GameObject* clone = new GameObject();
+		//	Color temp;
 
-			ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+		//	ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-			// Pick GO Color
-			ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
-			ImGui::SameLine();
-			ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+		//	// Pick GO Color
+		//	ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
+		//	ImGui::SameLine();
+		//	ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
-			ImGui::InputInt("Transform X", &x);
-			ImGui::InputInt("Transform Y", &y);
+		//	ImGui::InputInt("Transform X", &x);
+		//	ImGui::InputInt("Transform Y", &y);
 
-			NewTransform* tempPos = new NewTransform(x, y);
-			clone->SetTransform(tempPos);
-
-
-			// Player
-			ImGui::Checkbox("Player", &foo[0]);
-			if (foo[0] == true)
-				AddComponent(clone, playerControllerComponent);
-			else
-				RemoveComponent(clone, playerControllerComponent);
-				
-			// Renderer
-			ImGui::Checkbox("Renderer", &foo[1]);
-			if (foo[1] == true)
-				AddComponent(clone, rectangleRendererComponent);
-			else
-				RemoveComponent(clone, rectangleRendererComponent);
-
-			// Collider
-			ImGui::Checkbox("Collider", &foo[2]);
-			if (foo[2] == true)
-				AddComponent(clone, rectangleColliderComponent);
-			else
-				RemoveComponent(clone, rectangleColliderComponent);
-
-			// Color Changer
-			ImGui::Checkbox("Color Changer", &foo[3]);
-			if (foo[3] == true)
-				AddComponent(clone, collisionColorChangerComponent);
-			else
-				RemoveComponent(clone, collisionColorChangerComponent);
-
-			// Delete GameObject
-			if (ImGui::Button("Delete this object"))
-				ToggleUI();
-
-			// Close UI
-			if (ImGui::Button("Close"))
-				CloseEditUI();
+		//	NewTransform* tempPos = new NewTransform(x, y);
+		//	clone->SetTransform(tempPos);
 
 
-			ImGui::End();
-		}
+		//	// Player
+		//	ImGui::Checkbox("Player", &foo[0]);
+		//	if (foo[0] == true)
+		//		AddComponent(clone, playerControllerComponent);
+		//	else
+		//		RemoveComponent(clone, playerControllerComponent);
+		//		
+		//	// Renderer
+		//	ImGui::Checkbox("Renderer", &foo[1]);
+		//	if (foo[1] == true)
+		//		AddComponent(clone, rectangleRendererComponent);
+		//	else
+		//		RemoveComponent(clone, rectangleRendererComponent);
+
+		//	// Collider
+		//	ImGui::Checkbox("Collider", &foo[2]);
+		//	if (foo[2] == true)
+		//		AddComponent(clone, rectangleColliderComponent);
+		//	else
+		//		RemoveComponent(clone, rectangleColliderComponent);
+
+		//	// Color Changer
+		//	ImGui::Checkbox("Color Changer", &foo[3]);
+		//	if (foo[3] == true)
+		//		AddComponent(clone, collisionColorChangerComponent);
+		//	else
+		//		RemoveComponent(clone, collisionColorChangerComponent);
+
+		//	// Delete GameObject
+		//	if (ImGui::Button("Delete this object"))
+		//		ToggleUI();
+
+		//	// Close UI
+		//	if (ImGui::Button("Close"))
+		//		CloseEditUI();
+
+
+		//	ImGui::End();
+		//}
 
 
 
@@ -867,8 +883,7 @@ void WorldManager::ClearWorld()
 // Object ID
 int WorldManager::GetNewObjectID()
 {
-	m_ObjectIDIndex++;
-	return m_ObjectIDIndex;
+	return m_ObjectIDIndex++;
 }
 
 
@@ -1006,14 +1021,12 @@ void WorldManager::SpawnGameObjectOnMouse()
 
 
 
-//
-//bool WorldManager::CheckMouseCollision()
-//{
-//	if (CheckCollisionPointRec(GetMousePosition(), (Rectangle) { 0, 0, GetScreenWidth(), GetScreenHeight() })
-//	{
-//		// Mouse inside the screen bounds
-//	}
-//}
+
+bool WorldManager::CheckMouseCollision(Rectangle rect)
+{
+	Vector2 pos = GetMousePosition();
+	return CheckCollisionPointRec(pos, rect);
+}
 
 void WorldManager::ToggleUI()
 {
