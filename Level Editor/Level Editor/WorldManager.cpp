@@ -602,151 +602,80 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 
 void WorldManager::SaveWorld()
 {
-	// If nothing was loaded, don't save
+	// If nothing is in scene don't save anything
 	if (m_World.size() == 0)
-	{
 		return;
-	}
 
-	std::ofstream file(saveFileName + fileExtention);
-	numFiles++;
 
-	if (file.is_open() && file.good())
+	std::ofstream fin(saveFileName + fileExtention);
+
+	if (fin.is_open() && fin.good())
 	{
-		// Puts gameobjects in file
-		int i;
-		for (i = 0; i < m_World.size(); i++) //Loops through the world, and generate a file with the data
+		for (int i = 0; i < m_World.size(); i++)
 		{
-			file << "gameobject\n";
-			file << "{";
+			fin << "gameobject" << std::endl << "{" << std::endl;
 
 			if (m_World[i]->GetTransform() != nullptr)
 			{
-				file << "\tcomponent(";
-				file << "0)\n";
-				file << "\t{\n";
+				fin << "component(0) {";
 
-				//Component values:
-				file << "\tx";
-				file << m_World[i]->GetTransform()->GetX();
-				file << ";\n";
-
-				file << "\ty";
-				file << m_World[i]->GetTransform()->GetY();
-				file << ";\n";
-
-				file << "\t}\n";
-
+				fin << " x" << m_World[i]->GetTransform()->GetX() << "; ";
+				fin << " y" << m_World[i]->GetTransform()->GetY() << "; }" << std::endl;
 			}
 
 			if (m_World[i]->GetRenderer() != nullptr)
 			{
-				bool changedColor = false;
+				bool newColor = false;
 
-				if (m_World[i]->GetCollisionColorChanger() && m_World[i]->GetCollider()->GetIsColliding()) //Checks to see if a color changing object is currently changed
+				if (m_World[i]->GetCollisionColorChanger() && m_World[i]->GetCollider()->GetIsColliding())
 				{
-					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetDefaultColor()); //Ensures that the default color of the renderer will be saved
-					changedColor = true;
+					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetDefaultColor());
+					newColor = true;
 				}
-
-				file << "\tcomponent(";
-				file << "1)\n";
-				file << "\t{\n";
-
-				//Component values:
-
-				file << "\tw";
-				file << m_World[i]->GetRenderer()->GetWidth();
-				file << ";\n";
-
-				file << "\th";
-				file << m_World[i]->GetRenderer()->GetHeight();
-				file << ";\n";
-
-				file << "\tx";
-				file << m_World[i]->GetRenderer()->GetTopX();
-				file << ";\n";
-
-				file << "\ty";
-				file << m_World[i]->GetRenderer()->GetTopY();
-				file << ";\n";
 
 				Color color = m_World[i]->GetRenderer()->GetColor();
 
-				file << "\tr";
-				file << int(color.r);
-				file << ";\n";
+				if (newColor)
+					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetNewColor());
 
-				file << "\tg";
-				file << int(color.g);
-				file << ";\n";
+				fin << "component(1) {";
 
-				file << "\tb";
-				file << int(color.b);
-				file << ";\n";
-
-				file << "\ta";
-				file << int(color.a);
-				file << ";\n";
-
-				file << "\t}\n";
-
-				if (changedColor)
-				{
-					m_World[i]->GetRenderer()->SetColor(m_World[i]->GetCollisionColorChanger()->GetNewColor()); //Resets the color back to what it's suppost to display on the screen. 
-				}
+				fin << " w" << m_World[i]->GetRenderer()->GetWidth() << "; ";
+				fin << " h" << m_World[i]->GetRenderer()->GetHeight() << "; ";
+				fin << " x" << m_World[i]->GetRenderer()->GetTopX() << "; ";
+				fin << " y" << m_World[i]->GetRenderer()->GetTopY() << "; ";
+				fin << " r" << int(color.r) << "; ";
+				fin << " g" << int(color.g) << "; ";
+				fin << " b" << int(color.b) << "; ";
+				fin << " a" << int(color.a) << "; }" << std::endl;
 			}
 
 			if (m_World[i]->GetCollider() != nullptr)
 			{
-				file << "\tcomponent(";
-				file << "2)\n";
-				file << "\t{\n";
-
-				file << "\t}\n";
+				fin << "component(2) {}" << std::endl;
 			}
 
 			if (m_World[i]->GetPlayerController() != nullptr)
 			{
-				file << "\tcomponent(";
-				file << "3)\n";
-				file << "\t{\n";
+				fin << "component(3) {}" << std::endl;
 
-				file << "\t}\n";
 			}
 
 			if (m_World[i]->GetCollisionColorChanger() != nullptr)
 			{
-				file << "\tcomponent(";
-				file << "4)\n";
-				file << "\t{\n";
-
-				//Component values:
-
 				Color color = m_World[i]->GetCollisionColorChanger()->GetNewColor();
 
-				file << "\tr";
-				file << int(color.r);
-				file << ";\n";
+				fin << "component(4) { " << std::endl;
 
-				file << "\tg";
-				file << int(color.g);
-				file << ";\n";
-
-				file << "\tb";
-				file << int(color.b);
-				file << ";\n";
-
-				file << "\ta";
-				file << int(color.a);
-				file << ";\n";
-
-				file << "\t}\n";
+				fin << " r" << int(color.r) << "; ";
+				fin << " g" << int(color.g) << "; ";
+				fin << " b" << int(color.b) << "; ";
+				fin << " a" << int(color.a) << "; }" << std::endl;
 			}
 
-			file << "}\n";
+			fin << "}" << std::endl << std::endl;
 		}
-		file.close();
+		fin.close();
 	}
 }
 
