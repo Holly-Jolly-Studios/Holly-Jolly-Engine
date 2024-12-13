@@ -58,6 +58,7 @@ private:
 
 	// GameObject ID
 	int GetNewObjectID();
+	void ClearObjectIDs();
 
 	// Component Pool
 	NewTransform* AddToTransformPool();
@@ -109,6 +110,7 @@ private:
 
 	// GameObject ID
 	int m_ObjectIDIndex;
+	GameObject* m_SelectedGO;
 
 	// Component Pools & Lists
 	ComponentPool<NewTransform> m_TransformComponentPool;

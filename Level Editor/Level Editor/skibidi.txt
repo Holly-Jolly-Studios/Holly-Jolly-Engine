@@ -1,0 +1,90 @@
+gameobject
+{	component(0)
+	{
+	x382;
+	y123;
+	}
+	component(1)
+	{
+	w89;
+	h46;
+	x89;
+	y46;
+	r255;
+	g109;
+	b194;
+	a255;
+	}
+}
+gameobject
+{	component(0)
+	{
+	x185;
+	y194;
+	}
+	component(1)
+	{
+	w35;
+	h45;
+	x35;
+	y45;
+	r0;
+	g0;
+	b0;
+	a255;
+	}
+}
+gameobject
+{	component(0)
+	{
+	x277;
+	y393;
+	}
+	component(1)
+	{
+	w80;
+	h57;
+	x80;
+	y57;
+	r0;
+	g121;
+	b241;
+	a255;
+	}
+}
+gameobject
+{	component(0)
+	{
+	x362;
+	y263;
+	}
+	component(1)
+	{
+	w51;
+	h100;
+	x51;
+	y100;
+	r0;
+	g121;
+	b241;
+	a255;
+	}
+}
+gameobject
+{	component(0)
+	{
+	x189;
+	y355;
+	}
+	component(1)
+	{
+	w59;
+	h91;
+	x59;
+	y91;
+	r200;
+	g122;
+	b255;
+	a255;
+	}
+}

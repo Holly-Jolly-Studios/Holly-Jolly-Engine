@@ -39,8 +39,7 @@ bool foo[4] = { false, false, false, false };
 std::string tempFilePath = "";
 
 std::string items[] = { "a", "b", "c" }; // defined somewhere
-int selectedIndex = 0; // you need to store this state somewhere
-
+int selectedIndex = 0; // you need to store this state somewher
 
 // Loop
 void WorldManager::GameLoop()
@@ -69,18 +68,27 @@ void WorldManager::GameLoop()
 			SpawnGameObjectOnMouse();
 		}
 
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 		{
-			for (int i = 0; i < m_World.size(); i++) {
-				GameObject* go = m_World[i];
-				Rectangle rect;
-				rect.x = go->GetTransform()->GetX();
-				rect.y = go->GetTransform()->GetY();
-				rect.width = go->GetRenderer()->GetWidth();
-				rect.height = go->GetRenderer()->GetHeight();
+			if (!m_ShowGameObjectEditor) {
+				for (int i = 0; i < m_World.size(); i++) {
+					GameObject* go = m_World[i];
+					Rectangle rect;
+					rect.x = go->GetTransform()->GetX();
+					rect.y = go->GetTransform()->GetY();
+					rect.width = go->GetRenderer()->GetWidth();
+					rect.height = go->GetRenderer()->GetHeight();
 
-				if (CheckMouseCollision(rect)) {
-					std::cout << "clicked on " << i << std::endl;
+					if (CheckMouseCollision(rect)) {
+						m_SelectedGO = m_World[i];
+						x = m_SelectedGO->GetTransform()->GetX();
+						y = m_SelectedGO->GetTransform()->GetY();
+						Color temp = m_SelectedGO->GetRenderer()->GetColor();
+						goColor.x = temp.r;
+						goColor.y = temp.g;
+						goColor.z = temp.b;
+						OpenEditUI();
+					}
 				}
 			}
 		}
@@ -129,65 +137,69 @@ void WorldManager::GameLoop()
 
 
 
-		//if (m_ShowGameObjectEditor)
-		//{
-		//	// TODO: Edit specific gameobject
-		//	GameObject* clone = new GameObject();
-		//	Color temp;
+		if (m_ShowGameObjectEditor)
+		{
+			Color tempCol;
 
-		//	ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+			ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-		//	// Pick GO Color
-		//	ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
-		//	ImGui::SameLine();
-		//	ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+			// Pick GO Color
+			ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
+			ImGui::SameLine();
+			ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+			tempCol.r = goColor.x;
+			tempCol.g = goColor.y;
+			tempCol.b = goColor.z;
+			m_SelectedGO->GetRenderer()->SetColor(tempCol);
 
-		//	ImGui::InputInt("Transform X", &x);
-		//	ImGui::InputInt("Transform Y", &y);
+			ImGui::InputInt("Transform X", &x);
+			ImGui::InputInt("Transform Y", &y);
 
-		//	NewTransform* tempPos = new NewTransform(x, y);
-		//	clone->SetTransform(tempPos);
-
-
-		//	// Player
-		//	ImGui::Checkbox("Player", &foo[0]);
-		//	if (foo[0] == true)
-		//		AddComponent(clone, playerControllerComponent);
-		//	else
-		//		RemoveComponent(clone, playerControllerComponent);
-		//		
-		//	// Renderer
-		//	ImGui::Checkbox("Renderer", &foo[1]);
-		//	if (foo[1] == true)
-		//		AddComponent(clone, rectangleRendererComponent);
-		//	else
-		//		RemoveComponent(clone, rectangleRendererComponent);
-
-		//	// Collider
-		//	ImGui::Checkbox("Collider", &foo[2]);
-		//	if (foo[2] == true)
-		//		AddComponent(clone, rectangleColliderComponent);
-		//	else
-		//		RemoveComponent(clone, rectangleColliderComponent);
-
-		//	// Color Changer
-		//	ImGui::Checkbox("Color Changer", &foo[3]);
-		//	if (foo[3] == true)
-		//		AddComponent(clone, collisionColorChangerComponent);
-		//	else
-		//		RemoveComponent(clone, collisionColorChangerComponent);
-
-		//	// Delete GameObject
-		//	if (ImGui::Button("Delete this object"))
-		//		ToggleUI();
-
-		//	// Close UI
-		//	if (ImGui::Button("Close"))
-		//		CloseEditUI();
+			NewTransform* tempPos = new NewTransform(x, y);
+			m_SelectedGO->SetTransform(tempPos);
 
 
-		//	ImGui::End();
-		//}
+			//// Player
+			//ImGui::Checkbox("Player", &foo[0]);
+			//if (foo[0] == true)
+			//	AddComponent(clone, playerControllerComponent);
+			//else
+			//	RemoveComponent(clone, playerControllerComponent);
+			//	
+			//// Renderer
+			//ImGui::Checkbox("Renderer", &foo[1]);
+			//if (foo[1] == true)
+			//	AddComponent(clone, rectangleRendererComponent);
+			//else
+			//	RemoveComponent(clone, rectangleRendererComponent);
+
+			//// Collider
+			//ImGui::Checkbox("Collider", &foo[2]);
+			//if (foo[2] == true)
+			//	AddComponent(clone, rectangleColliderComponent);
+			//else
+			//	RemoveComponent(clone, rectangleColliderComponent);
+
+			//// Color Changer
+			//ImGui::Checkbox("Color Changer", &foo[3]);
+			//if (foo[3] == true)
+			//	AddComponent(clone, collisionColorChangerComponent);
+			//else
+			//	RemoveComponent(clone, collisionColorChangerComponent);
+
+			// Delete GameObject
+			if (ImGui::Button("Delete this object"))
+			{
+				
+			}
+
+			// Close UI
+			if (ImGui::Button("Close"))
+				CloseEditUI();
+
+
+			ImGui::End();
+		}
 
 		// Change BG Color
 		Color col = { myColor.x * 255, myColor.y * 255, myColor.z * 255, 255 };
@@ -586,7 +598,7 @@ void WorldManager::LoadLevel(std::string fileToOpen)
 void WorldManager::SaveWorld()
 {
 	// If nothing was loaded, don't save
-	if (m_World.size() <= 1)
+	if (m_World.size() == 0)
 	{
 		return;
 	}
@@ -598,7 +610,7 @@ void WorldManager::SaveWorld()
 	{
 		// Puts gameobjects in file
 		int i;
-		for (i = 3; i <= m_World.size(); i++) //Loops through the world, and generate a file with the data
+		for (i = 0; i < m_World.size(); i++) //Loops through the world, and generate a file with the data
 		{
 			file << "gameobject\n";
 			file << "{";
@@ -879,6 +891,8 @@ void WorldManager::ClearWorld()
 	m_ColliderColorChangerList.clear();
 	m_ColliderColorChangerPool.ClearPool();
 
+	ClearObjectIDs();
+
 	printf("done clearing\n");
 }
 
@@ -887,6 +901,11 @@ void WorldManager::ClearWorld()
 int WorldManager::GetNewObjectID()
 {
 	return m_ObjectIDIndex++;
+}
+
+void WorldManager::ClearObjectIDs()
+{
+	m_ObjectIDIndex = 0;
 }
 
 
