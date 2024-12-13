@@ -45,6 +45,7 @@ private:
 
 	// Level Serialization
 	std::unordered_map<int, GameObject*> m_World;
+	bool m_WorldUsed[POOL_SIZE];
 	int GetComponentValuesFromStream(std::string stream);
 	void LoadLevel(std::string fileToOpen);
 	void SaveWorld();
@@ -111,6 +112,7 @@ private:
 	// GameObject ID
 	int m_ObjectIDIndex;
 	GameObject* m_SelectedGO;
+	void DeleteSelected();
 
 	// Component Pools & Lists
 	ComponentPool<NewTransform> m_TransformComponentPool;

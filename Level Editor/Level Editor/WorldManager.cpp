@@ -73,8 +73,8 @@ void WorldManager::GameLoop()
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 		{
 			if (!m_ShowGameObjectEditor) {
-				for (int i = 0; i < m_World.size(); i++) {
-					GameObject* go = m_World[i];
+				for (auto i = m_World.begin(); i != m_World.end(); i++) {
+					GameObject* go = i->second;
 					Rectangle rect;
 					rect.x = go->GetTransform()->GetX();
 					rect.y = go->GetTransform()->GetY();
@@ -82,7 +82,7 @@ void WorldManager::GameLoop()
 					rect.height = go->GetRenderer()->GetHeight();
 
 					if (CheckMouseCollision(rect)) {
-						m_SelectedGO = m_World[i];
+						m_SelectedGO = i->second;
 						x = m_SelectedGO->GetTransform()->GetX();
 						y = m_SelectedGO->GetTransform()->GetY();
 						width = m_SelectedGO->GetRenderer()->GetWidth();
@@ -202,7 +202,8 @@ void WorldManager::GameLoop()
 			// Delete GameObject
 			if (ImGui::Button("Delete this object"))
 			{
-				
+				DeleteSelected();
+				CloseEditUI();
 			}
 
 			// Close UI
@@ -725,7 +726,7 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case collisionColorChangerComponent:
 		if (gameobject->HasComponent(type))
 		{
-			gameobject->RemoveColorChanger();
+			gameobject->RemoveColorChanger(m_ColliderColorChangerPool, m_ColliderColorChangerList);
 			RemoveFromCollisionColorChangerPool(gameobject);
 		}
 		break;
@@ -733,7 +734,7 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case transformComponent:
 		if (gameobject->HasComponent(type))
 		{
-			gameobject->RemoveTransform();
+			gameobject->RemoveTransform(m_TransformComponentPool, m_TransformComponentList);
 			RemoveFromTransformPool(gameobject);
 		}
 		break;
@@ -741,7 +742,7 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case playerControllerComponent:
 		if (gameobject->HasComponent(type))
 		{
-			gameobject->RemovePlayerController();
+			gameobject->RemovePlayerController(m_PlayerControllerPool, m_PlayerControllerList);
 			RemoveFromPlayerControllerPool(gameobject);
 		}
 		break;
@@ -749,7 +750,7 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case rectangleColliderComponent:
 		if (gameobject->HasComponent(type))
 		{
-			gameobject->RemoveCollider();
+			gameobject->RemoveCollider(m_ColliderPool, m_ColliderList);
 			RemoveFromColliderPool(gameobject);
 		}
 		break;
@@ -757,7 +758,7 @@ void WorldManager::RemoveComponent(GameObject* gameobject, ComponentTypes type)
 	case rectangleRendererComponent:
 		if (gameobject->HasComponent(type))
 		{
-			gameobject->RemoveRenderer();
+			gameobject->RemoveRenderer(m_RendererPool, m_RendererList);
 			RemoveFromRendererPool(gameobject);
 		}
 		break;
@@ -791,6 +792,76 @@ void WorldManager::SpawnPlayer(NewTransform* transform)
 
 	player->SetRenderer(AddToRendererPool(Vector2{ 80, 80 }, Vector2{ 800, 600 }, Color{ 255, 255, 0, 255 }));
 	player->GetRenderer()->SetGameObjectID(player->GetObjectID());
+}
+
+void WorldManager::DeleteSelected() 
+{
+	m_WorldUsed[m_SelectedGO->GetObjectID()] = false;
+
+	int key;
+	for (auto i = m_World.begin(); i != m_World.end(); i++) {
+		if (i->second == m_SelectedGO)
+		{
+			key = i->first;
+			break;
+		}
+	}
+	
+	if (m_SelectedGO->GetTransform() != NULL) {
+		for (int i = 0; i < m_TransformComponentList.size(); i++) {
+			if (m_TransformComponentList[i] == m_SelectedGO->GetTransform())
+			{
+				m_TransformComponentList.erase(m_TransformComponentList.begin() + i);
+			}
+		}
+		m_TransformComponentPool.Delete(m_SelectedGO->GetTransform());
+	}
+
+	if (m_SelectedGO->GetRenderer() != NULL)
+	{
+		for (int i = 0; i < m_RendererList.size(); i++) {
+			if (m_RendererList[i] == m_SelectedGO->GetRenderer())
+			{
+				m_RendererList.erase(m_RendererList.begin() + i);
+			}
+		}
+		m_RendererPool.Delete(m_SelectedGO->GetRenderer());
+	}
+
+	if (m_SelectedGO->GetPlayerController() != NULL)
+	{
+		for (int i = 0; i < m_PlayerControllerList.size(); i++) {
+			if (m_PlayerControllerList[i] == m_SelectedGO->GetPlayerController())
+			{
+				m_PlayerControllerList.erase(m_PlayerControllerList.begin() + i);
+			}
+		}
+		m_PlayerControllerPool.Delete(m_SelectedGO->GetPlayerController());
+	}
+
+	if (m_SelectedGO->GetCollisionColorChanger() != NULL)
+	{
+		for (int i = 0; i < m_ColliderColorChangerList.size(); i++) {
+			if (m_ColliderColorChangerList[i] == m_SelectedGO->GetCollisionColorChanger())
+			{
+				m_ColliderColorChangerList.erase(m_ColliderColorChangerList.begin() + i);
+			}
+		}
+		m_ColliderColorChangerPool.Delete(m_SelectedGO->GetCollisionColorChanger());
+	}
+
+	if (m_SelectedGO->GetCollider() != NULL)
+	{
+		for (int i = 0; i < m_ColliderList.size(); i++) {
+			if (m_ColliderList[i] == m_SelectedGO->GetCollider())
+			{
+				m_ColliderList.erase(m_ColliderList.begin() + i);
+			}
+		}
+		m_ColliderPool.Delete(m_SelectedGO->GetCollider());
+	}
+
+	m_World.erase(key);
 }
 
 void WorldManager::ClearWorld()
@@ -828,11 +899,22 @@ void WorldManager::ClearWorld()
 // Object ID
 int WorldManager::GetNewObjectID()
 {
-	return m_ObjectIDIndex++;
+	for (int i = 0; i < POOL_SIZE; i++) {
+		if (!m_WorldUsed[i]) {
+			m_WorldUsed[i] = true;
+			return i;
+		}
+	}
+
+	assert(false);
 }
 
 void WorldManager::ClearObjectIDs()
 {
+	for (int i = 0; i < POOL_SIZE; i++) {
+		m_WorldUsed[i] = false;
+	}
+
 	m_ObjectIDIndex = 0;
 }
 
@@ -1019,7 +1101,7 @@ Color WorldManager::GetRandomColor()
 		case 4:
 			color = BLACK;
 			break;
-		case 5:
+		default:
 			color = PINK;
 			break;
 	}

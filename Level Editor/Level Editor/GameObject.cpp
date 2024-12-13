@@ -254,46 +254,71 @@ void GameObject::RemoveFromComponentList(ComponentTypes type)
 	}
 }
 
-void GameObject::RemoveTransform()
+void GameObject::RemoveTransform(ComponentPool<NewTransform> pool, std::vector<NewTransform*> vec)
 {
 	if (m_GOTransform != NULL)
 	{
+		pool.Delete(m_GOTransform);
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == m_GOTransform)
+				vec.erase(vec.begin() + i);
+		}
 		m_GOTransform = NULL;
 		RemoveFromComponentList(transformComponent);
 	}
 }
 
-void GameObject::RemovePlayerController()
+void GameObject::RemovePlayerController(ComponentPool<PlayerController> pool, std::vector<PlayerController*> vec)
 {
 	if (m_GOPlayerController != NULL)
 	{
+		pool.Delete(m_GOPlayerController);
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == m_GOPlayerController)
+				vec.erase(vec.begin() + i);
+		}
 		m_GOPlayerController = NULL;
 		RemoveFromComponentList(playerControllerComponent);
 	}
 }
 
-void GameObject::RemoveCollider()
+void GameObject::RemoveCollider(ComponentPool<RectangleCollider> pool, std::vector<RectangleCollider*> vec)
 {
 	if (m_GOCollider != NULL)
 	{
+		pool.Delete(m_GOCollider);
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == m_GOCollider)
+				vec.erase(vec.begin() + i);
+		}
 		m_GOCollider = NULL;
 		RemoveFromComponentList(rectangleColliderComponent);
 	}
 }
 
-void GameObject::RemoveRenderer()
+void GameObject::RemoveRenderer(ComponentPool<RectangleRenderer> pool, std::vector<RectangleRenderer*> vec)
 {
 	if (m_GORenderer != NULL)
 	{
+		pool.Delete(m_GORenderer);
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == m_GORenderer)
+				vec.erase(vec.begin() + i);
+		}
 		m_GORenderer = NULL;
 		RemoveFromComponentList(rectangleRendererComponent);
 	}
 }
 
-void GameObject::RemoveColorChanger()
+void GameObject::RemoveColorChanger(ComponentPool<CollisionColorChanger> pool, std::vector<CollisionColorChanger*> vec)
 {
 	if (m_GOColorChanger != NULL)
 	{
+		pool.Delete(m_GOColorChanger);
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == m_GOColorChanger)
+				vec.erase(vec.begin() + i);
+		}
 		m_GOColorChanger = NULL;
 		RemoveFromComponentList(collisionColorChangerComponent);
 	}
@@ -301,11 +326,11 @@ void GameObject::RemoveColorChanger()
 
 void GameObject::RemoveAllComponents()
 {
-	RemoveTransform();
+	/*RemoveTransform();
 	RemovePlayerController();
 	RemoveCollider();
 	RemoveRenderer();
-	RemoveColorChanger();
+	RemoveColorChanger();*/
 }
 
 

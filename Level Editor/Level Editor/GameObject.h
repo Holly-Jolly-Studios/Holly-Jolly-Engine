@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raylib.h"
+#include "ComponentPool.h"
 #include "Components/CollisionColorChanger.h"
 #include "Components/PlayerController.h"
 #include "Components/RectangleCollider.h"
@@ -42,11 +43,11 @@ public:
 
 	// Remove Components
 	void RemoveFromComponentList(ComponentTypes type);
-	void RemoveTransform();
-	void RemovePlayerController();
-	void RemoveCollider();
-	void RemoveRenderer();
-	void RemoveColorChanger();
+	void RemoveTransform(ComponentPool<NewTransform> pool, std::vector<NewTransform*> vec);
+	void RemovePlayerController(ComponentPool<PlayerController> pool, std::vector<PlayerController*> vec);
+	void RemoveCollider(ComponentPool<RectangleCollider> pool, std::vector<RectangleCollider*> vec);
+	void RemoveRenderer(ComponentPool<RectangleRenderer> pool, std::vector<RectangleRenderer*> vec);
+	void RemoveColorChanger(ComponentPool<CollisionColorChanger> pool, std::vector<CollisionColorChanger*> vec);
 	void RemoveAllComponents();
 
 	// Getters
@@ -75,6 +76,4 @@ protected:
 	bool m_HasColliderComponent;
 	bool m_HasRendererComponent;
 	bool m_HasColorChangerComponent;
-
-	bool m_IsSelected = false;
 };
