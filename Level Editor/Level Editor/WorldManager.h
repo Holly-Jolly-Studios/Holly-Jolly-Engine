@@ -9,14 +9,15 @@
 #include <filesystem>
 #include <stdlib.h>
 #include <unordered_map>
+#include <random>
 
 #include "imgui.h"
 #include "rlImGui.h"
 
 const int MAX_COMMENT_LENGTH = 256;
 const char COMMENT_SYMBOL = '#';
-const int POOL_SIZE = 20;
-const int MAX_COMPONENTS = 20;
+const int POOL_SIZE = 100;
+const int MAX_COMPONENTS = 100;
 
 
 class WorldManager
@@ -85,6 +86,9 @@ private:
 	void SpawnGameObjectOnMouse();
 	bool CheckMouseCollision();
 	void ToggleUI();
+	void OpenEditUI();
+	void CloseEditUI();
+	Color GetRandomColor();
 
 	#pragma endregion
 

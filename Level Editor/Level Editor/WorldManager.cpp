@@ -60,7 +60,6 @@ void WorldManager::GameLoop()
 		// User input
 		if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 		{
-			printf("hello!!!!!!");
 			SpawnGameObjectOnMouse();
 		}
 
@@ -101,7 +100,7 @@ void WorldManager::GameLoop()
 
 		// Show other UI
 		if (ImGui::Button("Show UI"))
-			ToggleUI();
+			OpenEditUI();
 
 		ImGui::End();
 
@@ -158,6 +157,10 @@ void WorldManager::GameLoop()
 			// Delete GameObject
 			if (ImGui::Button("Delete this object"))
 				ToggleUI();
+
+			// Close UI
+			if (ImGui::Button("Close"))
+				CloseEditUI();
 
 
 			ImGui::End();
@@ -861,7 +864,6 @@ void WorldManager::ClearWorld()
 }
 
 
-
 // Object ID
 int WorldManager::GetNewObjectID()
 {
@@ -967,7 +969,6 @@ void WorldManager::RemoveFromRendererPool(GameObject* gameobject)
 void WorldManager::SaveButton()
 {
 	SaveWorld();
-	printf("testing 123 \n");
 }
 
 void WorldManager::DeleteAllGOOfType(ComponentTypes type)
@@ -986,7 +987,6 @@ void WorldManager::DeleteAllGOOfType(ComponentTypes type)
 	//		++it; // only increment if no element is erased
 	//	}
 	//}
-
 }
 
 void WorldManager::SpawnGameObjectOnMouse()
@@ -995,7 +995,13 @@ void WorldManager::SpawnGameObjectOnMouse()
 
 	GameObject* tempGO = NewGameObject();
 	tempGO->SetTransform(AddToTransformPool(pos.x, pos.y));
-	tempGO->SetRenderer(AddToRendererPool());
+	tempGO->GetTransform()->SetGameObjectID(tempGO->GetObjectID());
+
+	int x = GetRandomValue(30, 100);
+	int y = GetRandomValue(30, 100);
+
+	tempGO->SetRenderer(AddToRendererPool(x, y, x, y, GetRandomColor()));
+	tempGO->GetRenderer()->SetGameObjectID(tempGO->GetObjectID());
 }
 
 
@@ -1013,6 +1019,50 @@ void WorldManager::ToggleUI()
 {
 	m_ShowGameObjectEditor = !m_ShowGameObjectEditor;
 }
+
+void WorldManager::OpenEditUI()
+{
+	if(!m_ShowGameObjectEditor)
+		m_ShowGameObjectEditor = true;
+}
+
+void WorldManager::CloseEditUI()
+{
+	if(m_ShowGameObjectEditor)
+		m_ShowGameObjectEditor = false;
+}
+
+Color WorldManager::GetRandomColor()
+{
+	int rand = GetRandomValue(0, 5);
+	Color color;
+
+	switch (rand)
+	{
+		case 0:
+			color = BLUE;
+			break;
+		case 1:
+			color = RED;
+			break;
+		case 2:
+			color = YELLOW;
+			break;
+		case 3:
+			color = PURPLE;
+			break;
+		case 4:
+			color = BLACK;
+			break;
+		case 5:
+			color = PINK;
+			break;
+	}
+
+	return color;
+}
+
+
 
 
 
