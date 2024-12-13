@@ -33,6 +33,8 @@ static ImVec4 myColor = { 1, 1, 1, 255 };
 static ImVec4 goColor = { 1, 1, 1, 255 };
 int x = 0;
 int y = 0;
+float width = 0;
+float height = 0;
 
 bool foo[4] = { false, false, false, false };
 
@@ -83,10 +85,10 @@ void WorldManager::GameLoop()
 						m_SelectedGO = m_World[i];
 						x = m_SelectedGO->GetTransform()->GetX();
 						y = m_SelectedGO->GetTransform()->GetY();
+						width = m_SelectedGO->GetRenderer()->GetWidth();
+						height = m_SelectedGO->GetRenderer()->GetHeight();
 						Color temp = m_SelectedGO->GetRenderer()->GetColor();
-						goColor.x = temp.r;
-						goColor.y = temp.g;
-						goColor.z = temp.b;
+						goColor = { (float)temp.r/255, (float)temp.g/255, (float)temp.b/255, 255};
 						OpenEditUI();
 					}
 				}
@@ -139,24 +141,27 @@ void WorldManager::GameLoop()
 
 		if (m_ShowGameObjectEditor)
 		{
-			Color tempCol;
-
 			ImGui::Begin("Object Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
 			// Pick GO Color
 			ImGui::TextColored(ImVec4(1, 1, 1, 1), "Color");
 			ImGui::SameLine();
-			ImGui::ColorEdit4("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-			tempCol.r = goColor.x;
-			tempCol.g = goColor.y;
-			tempCol.b = goColor.z;
+			ImGui::ColorEdit3("Color", (float*)&goColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+			ImGui::SliderInt("Transform X", &x, 0, 800);
+			ImGui::SliderInt("Transform Y", &y, 0, 450);
+
+			ImGui::SliderFloat("Renderer W", &width, 0, 200);
+			ImGui::SliderFloat("Renderer H", &height, 0, 200);
+
+			m_SelectedGO->GetTransform()->SetX(x);
+			m_SelectedGO->GetTransform()->SetY(y);
+
+			m_SelectedGO->GetRenderer()->SetWidth(width);
+			m_SelectedGO->GetRenderer()->SetHeight(height);
+
+			Color tempCol = { goColor.x * 255, goColor.y * 255, goColor.z * 255, 255 };
 			m_SelectedGO->GetRenderer()->SetColor(tempCol);
-
-			ImGui::InputInt("Transform X", &x);
-			ImGui::InputInt("Transform Y", &y);
-
-			NewTransform* tempPos = new NewTransform(x, y);
-			m_SelectedGO->SetTransform(tempPos);
 
 
 			//// Player
