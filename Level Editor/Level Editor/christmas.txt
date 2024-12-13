@@ -7,72 +7,72 @@ component(1) { w62;  h89;  x62;  y89;  r12;  g107;  b23;  a255; }
 gameobject
 {
 component(0) { x242;  y229; }
-component(1) { w103.667;  h94;  x87;  y94;  r13;  g108;  b24;  a255; }
+component(1) { w103;  h94;  x87;  y94;  r13;  g108;  b24;  a255; }
 }
 
 gameobject
 {
 component(0) { x220;  y292; }
-component(1) { w149.583;  h80.583;  x35;  y41;  r13;  g108;  b24;  a255; }
+component(1) { w149;  h80;  x35;  y41;  r13;  g108;  b24;  a255; }
 }
 
 gameobject
 {
-component(0) { x278;  y371; }
-component(1) { w35.25;  h56.583;  x54;  y92;  r86;  g55;  b16;  a255; }
+component[0] { x278;  y371; }
+component[1] { w35;  h56;  x54;  y92;  r86;  g55;  b16;  a255; }
 }
 
 gameobject
 {
-component(0) { x277;  y138; }
-component(1) { w31.875;  h45.75;  x85;  y77;  r13;  g108;  b24;  a255; }
+component[0] { x277;  y138; }
+component[1] { w31;  h45;  x85;  y77;  r13;  g108;  b24;  a255; }
 }
 
 gameobject
 {
-component(0) { x273;  y128; }
-component(1) { w38.542;  h39.125;  x63;  y61;  r255;  g250;  b0;  a255; }
+component[0] { x273;  y128; }
+component[1] { w38;  h39;  x63;  y61;  r255;  g250;  b0;  a255; }
 }
 
 gameobject
 {
-component(0) { x322;  y239; }
-component(1) { w17.125;  h17.708;  x64;  y100;  r243;  g35;  b35;  a255; }
+component[0] { x322;  y239; }
+component[1] { w17;  h17;  x64;  y100;  r243;  g35;  b35;  a255; }
 }
 
 gameobject
 {
-component(0) { x253;  y259; }
-component(1) { w21.042;  h18.875;  x45;  y47;  r200;  g122;  b255;  a255; }
+component[0] { x253;  y259; }
+component[1] { w21;  h18;  x45;  y47;  r200;  g122;  b255;  a255; }
 }
 
 gameobject
 {
-component(0) { x321;  y306; }
-component(1) { w18.292;  h18.917;  x61;  y46;  r198;  g20;  b216;  a255; }
+component[0] { x321;  y306; }
+component[1] { w18;  h18;  x61;  y46;  r198;  g20;  b216;  a255; }
 }
 
 gameobject
 {
-component(0) { x257;  y321; }
-component(1) { w13.542;  h13.542;  x68;  y95;  r51;  g56;  b206;  a255; }
+component[0] { x257;  y321; }
+component[1] { w13;  h13;  x68;  y95;  r51;  g56;  b206;  a255; }
 }
 
 gameobject
 {
-component(0) { x279;  y210; }
-component(1) { w12.333;  h12.5;  x54;  y56;  r181;  g140;  b41;  a255; }
+component[0] { x279;  y210; }
+component[1] { w12;  h12;  x54;  y56;  r181;  g140;  b41;  a255; }
 }
 
 gameobject
 {
-component(0) { x331;  y400; }
-component(1) { w52.917;  h27.917;  x30;  y55;  r0;  g121;  b241;  a255; }
+component[0] { x331;  y400; }
+component[1] { w52;  h27;  x30;  y55;  r0;  g121;  b241;  a255; }
 }
 
 gameobject
 {
-component(0) { x204;  y375; }
-component(1) { w48.708;  h52.083;  x31;  y97;  r230;  g41;  b55;  a255; }
+component[0] { x204;  y375; }
+component[1] { w48;  h52;  x31;  y97;  r230;  g41;  b55;  a255; }
 }
 
