@@ -179,29 +179,9 @@ void WorldManager::GameLoop()
 			ImGui::Checkbox("Player", &foo[0]);
 			if (foo[0] && !m_SelectedGO->HasComponent(playerControllerComponent))
 				AddComponent(m_SelectedGO, playerControllerComponent);
+			// the object will become a player forever but if you uncomment this the world will end
 			//else if (!foo[0] && m_SelectedGO->HasComponent(playerControllerComponent))
 				//RemoveComponent(m_SelectedGO, playerControllerComponent);
-				
-			//// Renderer
-			//ImGui::Checkbox("Renderer", &foo[1]);
-			//if (foo[1] == true)
-			//	AddComponent(clone, rectangleRendererComponent);
-			//else
-			//	RemoveComponent(clone, rectangleRendererComponent);
-
-			//// Collider
-			//ImGui::Checkbox("Collider", &foo[2]);
-			//if (foo[2] == true)
-			//	AddComponent(clone, rectangleColliderComponent);
-			//else
-			//	RemoveComponent(clone, rectangleColliderComponent);
-
-			//// Color Changer
-			//ImGui::Checkbox("Color Changer", &foo[3]);
-			//if (foo[3] == true)
-			//	AddComponent(clone, collisionColorChangerComponent);
-			//else
-			//	RemoveComponent(clone, collisionColorChangerComponent);
 
 			// Delete GameObject
 			if (ImGui::Button("Delete this object"))
